@@ -22,6 +22,7 @@ class addProject(View):
             return JsonResponse(response)
 
     """新增项目
+      dd
       项目code不允许重复
       新增项目时选择用户,在关联表中新增关联关系
       判断用户状态是否正确且用户是否存在      
