@@ -1,0 +1,1 @@
+from faker import Fakerfake=Faker()def hex_no0x():     return fake.sha256()
