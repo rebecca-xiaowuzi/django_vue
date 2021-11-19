@@ -12,6 +12,8 @@ urlpatterns = [
     url(r'User/updateUser', users.updateUser.as_view()),
     url(r'User/deleteUser', users.deleteUser.as_view()),
     url(r'Project/addProject', project.addProject.as_view()),
+    url(r'Project/getProjects', project.getProjects.as_view()),
+    url(r'Project/updateProject', project.updateProject.as_view()),
     url(r'Environment/addEnvironment', manageenvironmental.addEnvironment.as_view()),
     url(r'Environment/addVariable', manageenvironmental.AddVariable.as_view()),
     url(r'Login/login', login.Login.as_view()),

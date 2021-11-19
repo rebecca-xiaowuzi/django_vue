@@ -49,11 +49,16 @@ class addUser(View):
                return JsonResponse(response)
 
 class getUsers(View):
-       """查询所有用户列表"""
+       """分页查询所有用户列表"""
        def get(self,request):
         response={}
-        page=request.GET.get('page')
-        pagesize=request.GET.get('pagesize')
+        print(request)
+        if not (request.GET.get('page') and request.GET.get('pagesize')):
+            page='1'
+            pagesize=str(models.User.objects.filter(status='1').count())
+        else:
+            page=request.GET.get('page')
+            pagesize=request.GET.get('pagesize')
         users=models.User.objects.filter(status='1').order_by('id')
         contacts =Paginator(users,int(pagesize))
         try:
@@ -68,9 +73,11 @@ class getUsers(View):
         data=UserSerializer(instance=userlist.object_list,many=True)
         response['data'] = data.data
         response['msg']='success'
-        response['code']='9966'
+        response['code']='9999'
         response['total']=models.User.objects.filter(status='1').count()
         return JsonResponse(response)
+
+
 
 class updateUser(View):
    """编辑用户

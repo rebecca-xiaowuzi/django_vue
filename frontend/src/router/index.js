@@ -6,6 +6,10 @@ import userlist from '../components/userlist'
 import adduser from '../components/adduser'
 import updateuser from '../components/updateuser'
 import projectlist from '../components/projectlist'
+import addproject from '../components/addproject'
+import updateproject from '../components/updateproject'
+import addenvironment from '../components/addenvironment'
+import projectdetail from '../components/projectdetail'
 
 Vue.use(Router)
 
@@ -39,6 +43,22 @@ export default new Router({
           path: '/projectlist',
           name: 'projectlist',
           component: projectlist
+        },
+        {
+          path: '/addproject',
+          component: addproject
+        },
+        {
+          path: '/updateproject',
+          component: updateproject
+        },
+        {
+          path: '/addenvironment',
+          component: addenvironment
+        },
+        {
+          path: '/projectdetail',
+          component: projectdetail
         }
 
       ]}

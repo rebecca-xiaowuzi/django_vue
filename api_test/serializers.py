@@ -1,7 +1,7 @@
 from django.db.models import Q
 from rest_framework import serializers,validators
 
-from api_test.models import User,Variable,Environment,ApiHead,ApiInfo,ApiRequestParam,Project,Funcation,SqlConnect,Sql,TestCase,TestCaseDetail,TestCaseSet
+from api_test.models import User,Variable,Environment,ApiHead,ApiInfo,ApiRequestParam,Project,Funcation,SqlConnect,Sql,TestCase,TestCaseDetail,TestCaseSet,Project,User2Project
 
 from django.http import request
 
@@ -21,6 +21,8 @@ class UserSerializer(serializers.ModelSerializer):
        else:
           raise serializers.ValidationError("用户名或密码错误或者用户被禁用")
 
+
+# 请求头中获取用户名称
 def  getuser(request):
          user=request.META.get("HTTP_USER")
          return user
@@ -171,6 +173,34 @@ class TestCaseSetSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("该项目不存在")
 
 
+class ProjectSerializer(serializers.ModelSerializer):
+    """项目信息序列化"""
+    users = serializers.SerializerMethodField()
+    environments=serializers.SerializerMethodField()
+    class Meta:
+        model=Project
+        fields = '__all__'
+    def get_users(self,obj):
+        users=User2Project.objects.filter(projectCode=obj.projectCode)
+        return Project2UserSerializer(instance=users,many=True).data
+    def get_environments(self,obj):
+        environments=Environment.objects.filter(projectCode=obj.projectCode)
+        return ProjectEnvironmentSerializer(instance=environments,many=True).data
 
 
+
+
+class Project2UserSerializer(serializers.ModelSerializer):
+            """项目与用户信息序列化"""
+            class Meta:
+                model = User2Project
+                fields = ['phone','id']
+
+
+class ProjectEnvironmentSerializer(serializers.ModelSerializer):
+    """项目环境信息序列化"""
+
+    class Meta:
+        model = Environment
+        fields = ['ip', 'environmentName']
 

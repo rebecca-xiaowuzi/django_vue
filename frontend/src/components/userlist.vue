@@ -49,10 +49,9 @@ export default {
     // 获取页数直接请求list接口
     handleCurrentChange (val) {
       this.$http.get(`User/getUsers?pagesize=10&page=${val}`).then(response => {
-        if (response.data.code !== '9966') { return this.$message.error({message: response.data.msg, center: true}) } else {
+        if (response.data.code !== '9999') { return this.$message.error({message: response.data.msg, center: true}) } else {
           this.tableData = response.data.data
           this.total = response.data.total
-          this.phone = response.data.data.phone
         }
       })
     },
@@ -84,8 +83,7 @@ export default {
   data () {
     return {
       tableData: this.handleCurrentChange(1),
-      total: 0,
-      phone: ''
+      total: 0
     }
   }
 }
