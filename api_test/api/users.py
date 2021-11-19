@@ -54,7 +54,7 @@ class getUsers(View):
         response={}
         page=request.GET.get('page')
         pagesize=request.GET.get('pagesize')
-        users=models.User.objects.all().order_by('id')
+        users=models.User.objects.filter(status='1').order_by('id')
         contacts =Paginator(users,int(pagesize))
         try:
           userlist=contacts.page(int(page))
@@ -69,6 +69,7 @@ class getUsers(View):
         response['data'] = data.data
         response['msg']='success'
         response['code']='9966'
+        response['total']=models.User.objects.filter(status='1').count()
         return JsonResponse(response)
 
 class updateUser(View):

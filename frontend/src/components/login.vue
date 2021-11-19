@@ -1,11 +1,11 @@
 <template>
   <div>
-    <el-form ref="loginformref" :model="loginform" label-width="80px">
+    <el-form ref="loginformref" :model="loginform">
   <el-form-item label="用户名">
-    <el-input v-model="loginform.username"></el-input>
+    <el-input v-model="loginform.phone"></el-input>
   </el-form-item>
       <el-form-item label="密码">
-    <el-input v-model="loginform.password"></el-input>
+    <el-input  v-model="loginform.password"></el-input>
   </el-form-item>
       <el-form-item>
     <el-button type="primary" @click="login">登录</el-button>
@@ -17,20 +17,24 @@
 
 <script>
 export default {
-data(){
-  loginform: {
-      username: "",
-      password: ""
-  }
-},
-methods:{
-  resetloginform(){
-    this.$refs.loginformref.resetFields();
+  data () {
+    return {
+      loginform: {
+        phone: 'dddd',
+        password: 'dddd'
+      }
+    }
   },
-  login(){
-    this.$http.post("Login/login",this.loginform);
+  methods: {
+    resetloginform () {
+      this.$refs.loginformref.resetFields()
+    },
+    login () {
+      this.$http.post('Login/login', this.loginform).then(response => {
+        if (response.data.code !== '9999') { return this.$message.error({message: response.data.msg, center: true}) } else { this.$router.push('/home') }
+      })
+    }
   }
-}
 }
 </script>
 
