@@ -19,8 +19,34 @@
   </div>
   </el-aside>
   <el-main>
-   <div>
+     <el-tabs type="card" editable>
+  <el-tab-pane
+    :key="item.environmentName"
+    v-for="item in editableTabs"
+    :label="item.environmentName"
+    :name="item.environmentName">
+  <template>
+    {{item.environmentName}}
+  <div>
+    <el-form :model="updateenvironment">
+      <el-form-item label="环境名称">
+    <el-input v-model="updateenvironment.environmentName"  :placeholder="item.environmentName"></el-input>
+  </el-form-item>
+       <el-form-item label="环境描述">
+    <el-input  v-model="updateenvironment.environmentDescription" :placeholder="item.environmentDescription"></el-input>
+  </el-form-item>
+       <el-form-item label="ip">
+<el-input  v-model="updateenvironment.ip" :placeholder="item.ip"></el-input>
+  </el-form-item>
+      <el-form-item>
+    <el-button type="primary" @click="updateenvironment" >修改</el-button>
+    <el-button @click="cancel">取消</el-button>
+  </el-form-item>
+      </el-form>
   </div>
+</template>
+  </el-tab-pane>
+</el-tabs>
   </el-main>
 </el-container>
  </template>
@@ -32,11 +58,15 @@ export default {
         projectCode: this.$route.query.projectCode,
         projectName: this.$route.query.projectName,
         projectDescription: this.$route.query.projectDescription,
-        users: this.$route.query.users,
-        // environments: this.$route.query.environments
-        environments: [{'ip': 'https://xagent-new-fat.vocustcloud.com',
-          'environmentName': '1115555111'}, {'ip': 'https://xagud.com',
-          'environmentName': '11155xxx55111'}]
+        users: this.$route.query.users
+      },
+      editableTabs: this.$route.query.environments,
+      updateenvironment: {
+        projectCode: this.$route.query.projectCode,
+        environmentName: '',
+        environmentDescription: '',
+        ip: ''
+
       }
     }
   }

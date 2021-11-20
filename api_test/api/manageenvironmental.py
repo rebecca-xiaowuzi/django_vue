@@ -91,6 +91,52 @@ class AddVariable(View):
 
 
 
+class addEnvironment(View):
+    """修改项目环境信息
+    """
+
+    def param_check(self, request_data):
+        response = {}
+        try:
+            if not  request_data["projectCode"]:
+                response['msg'] = '参数有误'
+                response['code'] = '9966'
+                return JsonResponse(response)
+
+        except KeyError:
+            response['msg'] = '参数有误'
+            response['code'] = '9966'
+            return JsonResponse(response)
+
+    def post(self, request):
+        request_data = JSONParser().parse(request)
+        result = self.param_check(request_data=request_data)
+        if result:
+            return result
+        response = {}
+        environmentName = request_data.get('environmentName')
+        projectCode = request_data.get('projectCode')
+        try:
+            if models.Environment.objects.filter(environmentName=environmentName).count()!=0:
+                response['code'] = '9900'
+                response['msg'] = '该项目环境已存在'
+                return JsonResponse(response)
+            elif models.Project.objects.filter(projectCode=projectCode).count()==0:
+                response['code'] = '9902'
+                response['msg'] = '项目不存在'
+                return JsonResponse(response)
+            else:
+                ip  = request_data.get('ip')
+                environmentDescription = request_data.get('environmentDescription')
+                environment = models.Environment.objects.create(environmentName=environmentName, ip=ip, projectCode=projectCode,environmentDescription=environmentDescription)
+                environment.save()
+                response['code'] = '9999'
+                response['msg'] = 'success'
+                return JsonResponse(response)
+        except:
+            response['msg'] = '系统错误'
+            response['code'] = '9901'
+            return JsonResponse(response)
 
 
 

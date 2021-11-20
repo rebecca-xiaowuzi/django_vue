@@ -141,7 +141,6 @@ class updateProject(View):
            return result
        response = {}
        projectCode = request_data.get('projectCode')
-       print(projectCode)
        projectName = request_data.get('projectName')
        projectDescription = request_data.get('projectDescription')
        users = request_data.get('users')

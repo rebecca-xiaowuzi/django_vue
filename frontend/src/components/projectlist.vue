@@ -25,12 +25,16 @@
       label="项目描述">
     </el-table-column>
     <el-table-column
-      prop="users"
       label="项目用户">
+      <template slot-scope="scope">
+        {{ scope.row.users.map((json) => { return json.phone }) }}
+      </template>
     </el-table-column>
     <el-table-column
-      prop="environments"
       label="项目环境">
+      <template slot-scope="scope">
+        {{ scope.row.environments.map((json) => { return json.environmentName }) }}
+      </template>
     </el-table-column>
     <el-table-column
       prop="create_time"
@@ -74,13 +78,16 @@ export default {
       this.$router.push('/addproject')
     },
     updateproject (row) {
-      this.$router.push({path: '/updateproject', query: {projectCode: row.projectCode, projectName: row.projectName, projectDescription: row.projectDescription, users: row.users}})
+      let phoneList = row.users.map((json) => { return json.phone })
+      this.$router.push({path: '/updateproject', query: { projectCode: row.projectCode, projectName: row.projectName, projectDescription: row.projectDescription, users: phoneList }})
     },
     addenvironment (row) {
       this.$router.push({path: '/addenvironment', query: {projectCode: row.projectCode}})
     },
     projectdetail (row) {
-      this.$router.push({path: '/projectdetail', query: {projectCode: row.projectCode, projectName: row.projectName, projectDescription: row.projectDescription, users: row.users, environments: row.environments}})
+      let phoneList = row.users.map((json) => { return json.phone })
+      // let environmentList = row.environments.map((json) => { return json.phone })
+      this.$router.push({path: '/projectdetail', query: {projectCode: row.projectCode, projectName: row.projectName, projectDescription: row.projectDescription, users: phoneList, environments: row.environments}})
     }
     // 暂未实现
     // deleteuser (row) {

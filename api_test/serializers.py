@@ -202,5 +202,5 @@ class ProjectEnvironmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Environment
-        fields = ['ip', 'environmentName']
+        fields = ['ip', 'environmentName','environmentDescription']
 
