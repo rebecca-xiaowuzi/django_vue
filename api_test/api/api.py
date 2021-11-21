@@ -8,7 +8,8 @@ from rest_framework.parsers import JSONParser
 from api_test.serializers import ApiInfoSerializer,ApiHeadSerializer,ApiRequestParamSerializer
 from api_test.api.login import GetUserFromHeader
 import requests
-from api_test.models import Environment
+from api_test.models import Environment,ApiInfo
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 class AddApi(View):
      """新增api接口"""
      def post(self,request):
@@ -22,7 +23,6 @@ class AddApi(View):
          apiCode=request_data.get('apiCode')
          projectCode = request_data.get('projectCode')
          try:
-
              api_serializer = ApiInfoSerializer(data=request_data)
              """放在同一个事物中"""
              with transaction.atomic():
@@ -120,6 +120,45 @@ def runapi(request_data):
             return r
 
 
+class apilist(View):
+    def post(self, request):
+        response = {}
+        request_data = JSONParser().parse(request)
+        if 'page' not in request_data:
+            page = 1
+        else:
+            page = request_data.get('page')
+        if 'pagesize' not in request_data:
+            pagesize = 10
+        else:
+            pagesize = request_data.get('pagesize')
+        kwargs = {}
+        if 'projectCode' not in request_data or request_data.get('projectCode') == "":
+            pass
+        else:
+            kwargs['projectCode__icontains'] =request_data.get("projectCode")
+        if 'apiname' not in request_data or request_data.get('apiname') == "":
+            pass
+        else:
+            kwargs['apiname__icontains'] = request_data.get('apiname')
+        apis = ApiInfo.objects.filter(**kwargs).order_by('id')
+        total = apis.count()
+        contacts = Paginator(apis, pagesize)
+        try:
+            apilist = contacts.page(page)
+        except PageNotAnInteger:
+            apilist = contacts.page(1)
+        except EmptyPage:
+            apilist = contacts.page(contacts.num_pages)
+        except:
+            apilist = contacts.page(1)
+        # 序列化项目信息
+        data = ApiInfoSerializer(instance=apilist.object_list, many=True)
+        response['data'] = data.data
+        response['msg'] = 'success'
+        response['code'] = '9999'
+        response['total'] = total
+        return JsonResponse(response)
 
 
 

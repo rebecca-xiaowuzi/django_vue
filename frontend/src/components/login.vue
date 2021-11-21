@@ -20,8 +20,8 @@ export default {
   data () {
     return {
       loginform: {
-        phone: 'dddd',
-        password: 'dddd'
+        phone: '18334705319',
+        password: '111111'
       }
     }
   },

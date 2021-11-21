@@ -52,7 +52,6 @@ class getUsers(View):
        """分页查询所有用户列表"""
        def get(self,request):
         response={}
-        print(request)
         if not (request.GET.get('page') and request.GET.get('pagesize')):
             page='1'
             pagesize=str(models.User.objects.filter(status='1').count())

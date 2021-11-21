@@ -30,7 +30,6 @@
 <script>
 export default {
   data () {
-    console.log('===', this.$route.query.users)
     return {
       updateproject: {
         projectCode: this.$route.query.projectCode,

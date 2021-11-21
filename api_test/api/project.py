@@ -89,8 +89,12 @@ class getProjects(View):
 
     def get(self, request):
         response = {}
-        page = request.GET.get('page')
-        pagesize = request.GET.get('pagesize')
+        if not (request.GET.get('page') and request.GET.get('pagesize')):
+            page = '1'
+            pagesize = str(models.Project.objects.all().count())
+        else:
+            page = request.GET.get('page')
+            pagesize = request.GET.get('pagesize')
         projects = models.Project.objects.all().order_by('id')
         contacts = Paginator(projects, int(pagesize))
         try:
@@ -106,7 +110,7 @@ class getProjects(View):
         response['data'] = data.data
         response['msg'] = 'success'
         response['code'] = '9999'
-        response['total'] = models.Project.objects.all().count()
+        response['total'] = projects.count()
         return JsonResponse(response)
 
 
