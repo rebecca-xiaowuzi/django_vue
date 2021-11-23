@@ -174,7 +174,6 @@ def runtestcase(request_data):
                             request_executeapi = {'requestType': requestType, 'apiHead': apiHead,
                                                   'projectCode': projectcode, 'environmentName': environmentName,
                                                   'apiAddress': apiAddress, 'ApiRequestParam': apirequestparamD}
-                            print(request_executeapi)
                         else:
                             request_executeapi = {'requestType': requestType, 'apiHead': apiHead,
                                                   'projectCode': projectcode,

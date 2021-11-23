@@ -10,6 +10,12 @@ import addproject from '../components/addproject'
 import updateproject from '../components/updateproject'
 import addenvironment from '../components/addenvironment'
 import projectdetail from '../components/projectdetail'
+import variablelist from '../components/variablelist'
+import addvariable from '../components/addvariable'
+import testcaselist from '../components/testcaselist'
+import apilist from '../components/apilist'
+import addapi from '../components/addapi'
+import updateapi from '../components/updateapi'
 
 Vue.use(Router)
 
@@ -59,8 +65,34 @@ export default new Router({
         {
           path: '/projectdetail',
           component: projectdetail
+        },
+        {
+          path: '/variablelist',
+          name: 'variablelist',
+          component: variablelist
+        },
+        {
+          path: '/addvariable',
+          component: addvariable
+        },
+        {
+          path: '/testcaselist',
+          name: 'testcaselist',
+          component: testcaselist
+        },
+        {
+          path: '/apilist',
+          name: 'apilist',
+          component: apilist
+        },
+        {
+          path: '/addapi',
+          component: addapi
+        },
+        {
+          path: '/updateapi',
+          component: updateapi
         }
-
       ]}
 
   ]

@@ -43,7 +43,7 @@ class VariableDynamicSerializer(serializers.ModelSerializer):
                   raise serializers.ValidationError(detail={"该变量名称在该环境下已存在"})
             raise serializers.ValidationError(detail="项目或者环境名称不存在")
 
-
+# 新增接口
 class ApiInfoSerializer(serializers.ModelSerializer):
     requestParameterType = serializers.CharField( required=False)
     apiHead = serializers.JSONField(required=False)
@@ -66,21 +66,56 @@ class ApiInfoSerializer(serializers.ModelSerializer):
             else:
                 raise serializers.ValidationError("该项目不存在")
 
+# 修改接口
+class UpdateApiInfoSerializer(serializers.ModelSerializer):
+    requestParameterType = serializers.CharField( required=False)
+    apiHead = serializers.JSONField(required=False)
+    ApiRequestParam = serializers.JSONField(required=False)
+    """接口信息序列化"""
+    class Meta:
+        model=ApiInfo
+        fields = '__all__'
+    def validate(self, attrs):
+            if 'apiHead' in attrs:
+                del attrs['apiHead']
+            if 'ApiRequestParam' in attrs:
+                del attrs['ApiRequestParam']
+            """检查项目和接口是否存在"""
+            if Project.objects.filter(projectCode=attrs['projectCode']).count()==1:
+                if ApiInfo.objects.filter(projectCode=attrs['projectCode']).filter(apiCode=attrs['apiCode']).count()==1:
+                    return attrs
+                else:
+                    raise serializers.ValidationError("该项目下该接口不存在")
+            else:
+                raise serializers.ValidationError("该项目不存在")
 
 
-
+# 序列化
 class ApiHeadSerializer(serializers.ModelSerializer):
     """接口请求头信息序列化"""
     class Meta:
         model=ApiHead
-        fields = '__all__'
+        fields = ['name','value']
 
+#反序列化
+class ApiHeadDecSerializer(serializers.ModelSerializer):
+    """接口请求头信息序列化"""
+    class Meta:
+        model=ApiHead
+        fields = '__all__'
+# 序列化
 class ApiRequestParamSerializer(serializers.ModelSerializer):
     """接口请求参数信息序列化"""
     class Meta:
         model=ApiRequestParam
-        fields = '__all__'
+        fields =  ['value']
 
+# 反序列化
+class ApiRequestParamDecSerializer(serializers.ModelSerializer):
+    """接口请求参数信息序列化"""
+    class Meta:
+        model=ApiRequestParam
+        fields =  '__all__'
 
 class FuncationSerializer(serializers.ModelSerializer):
     """函数信息序列化"""
@@ -202,5 +237,5 @@ class ProjectEnvironmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Environment
-        fields = ['ip', 'environmentName']
+        fields = ['ip', 'environmentName','environmentDescription']
 

@@ -73,9 +73,10 @@ class Variable(models.Model):
     create_user = models.CharField(max_length=30,null=True)
 
 HTTP_CHOICE = (
-        ('HTTP', 'HTTP'),
-        ('HTTPS', 'HTTPS')
-    )
+('HTTPS', 'HTTPS'),
+        ('HTTP', 'HTTP')
+
+)
 
 
 REQUEST_TYPE_CHOICE = (
@@ -87,7 +88,8 @@ REQUEST_TYPE_CHOICE = (
 
 REQUEST_PARAMETER_TYPE_CHOICE = (
     ('form-data', '表单(form-data)'),
-    ('raw', '源数据(raw)')
+    ('raw', '源数据(raw)'),
+    ('no-params','无参数')
 )
 
 class ApiInfo(models.Model):
@@ -98,7 +100,7 @@ class ApiInfo(models.Model):
     httpType = models.CharField(max_length=50, default='HTTP', verbose_name='http/https', choices=HTTP_CHOICE)
     requestType = models.CharField(max_length=50, verbose_name='请求方式', choices=REQUEST_TYPE_CHOICE)
     apiAddress = models.CharField(max_length=1024, verbose_name='接口地址')
-    requestParameterType = models.CharField(max_length=50, verbose_name='请求参数格式', choices=REQUEST_PARAMETER_TYPE_CHOICE)
+    requestParameterType = models.CharField(max_length=50, verbose_name='请求参数格式',blank=True, choices=REQUEST_PARAMETER_TYPE_CHOICE)
     status = models.BooleanField(default=True, verbose_name='状态')
     description = models.CharField(max_length=1024, blank=True, null=True, verbose_name='描述')
     create_time = models.DateTimeField(auto_now_add=True)

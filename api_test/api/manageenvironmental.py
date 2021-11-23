@@ -4,10 +4,10 @@ from django.views import View
 from rest_framework.parsers import JSONParser
 
 from api_test import models
-
-from api_test.serializers import VariableDynamicSerializer
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from api_test.serializers import VariableDynamicSerializer,ProjectEnvironmentSerializer
 from api_test.api.login import GetUserFromHeader
-
+from django.db.models import Q
 class addEnvironment(View):
     """新增项目环境
     1、环境名不可以重复
@@ -47,8 +47,7 @@ class addEnvironment(View):
             else:
                 ip  = request_data.get('ip')
                 environmentDescription = request_data.get('environmentDescription')
-                environment = models.Environment.objects.create(environmentName=environmentName, ip=ip, projectCode=projectCode,environmentDescription=environmentDescription)
-                environment.save()
+                models.Environment.objects.create(environmentName=environmentName, ip=ip, projectCode=projectCode,environmentDescription=environmentDescription)
                 response['code'] = '9999'
                 response['msg'] = 'success'
                 return JsonResponse(response)
@@ -91,17 +90,153 @@ class AddVariable(View):
 
 
 
+class updateEnvironment(View):
+    """修改项目环境信息
+    """
+
+    def param_check(self, request_data):
+        response = {}
+        try:
+            if not request_data["ip"] or not request_data["environmentName"] or not request_data["projectCode"]:
+                response['msg'] = '参数有误'
+                response['code'] = '9966'
+                return JsonResponse(response)
+
+        except KeyError:
+            response['msg'] = '参数有误'
+            response['code'] = '9966'
+            return JsonResponse(response)
+
+    def post(self, request):
+        request_data = JSONParser().parse(request)
+        result = self.param_check(request_data=request_data)
+        if result:
+            return result
+        response = {}
+        environmentName = request_data.get('environmentName')
+        projectCode = request_data.get('projectCode')
+        try:
+                environment=models.Environment.objects.get(Q(environmentName=environmentName),Q(projectCode=projectCode))
+                environment.ip  = request_data.get('ip')
+                environment.environmentDescription = request_data.get('environmentDescription')
+                environment.save()
+                response['code'] = '9999'
+                response['msg'] = 'success'
+                return JsonResponse(response)
+        except:
+            response['msg'] = '项目或者环境不存在'
+            response['code'] = '9901'
+            return JsonResponse(response)
+
+# 查看项目环境信息详情
+class getEnvironmentDetail(View):
+
+    def param_check(self, request_data):
+        response = {}
+        try:
+            if  not request_data["environmentName"] or not request_data["projectCode"]:
+                response['msg'] = '参数有误'
+                response['code'] = '9966'
+                return JsonResponse(response)
+
+        except KeyError:
+            response['msg'] = '参数有误'
+            response['code'] = '9966'
+            return JsonResponse(response)
+
+    def post(self, request):
+        request_data = JSONParser().parse(request)
+        result = self.param_check(request_data=request_data)
+        if result:
+            return result
+        response = {}
+        environmentName = request_data.get('environmentName')
+        projectCode = request_data.get('projectCode')
+        try:
+                environment = models.Environment.objects.get(Q(environmentName=environmentName) , Q(projectCode=projectCode))
+                data = ProjectEnvironmentSerializer(instance=environment, many=False)
+                response['data'] = data.data
+                response['msg'] = 'success'
+                response['code'] = '9999'
+                return JsonResponse(response)
+        except  :
+            response['msg'] ="项目或者环境不存在"
+            response['code'] = '9901'
+            return JsonResponse(response)
 
 
+# 查询项目变量信息列表
+class getVariablelist(View):
+    def param_check(self, request_data):
+        response = {}
+        try:
+            if  not request_data["environmentName"] or not request_data["projectCode"]:
+                response['msg'] = '参数有误'
+                response['code'] = '9966'
+                return JsonResponse(response)
+
+        except KeyError:
+            response['msg'] = '参数有误'
+            response['code'] = '9966'
+            return JsonResponse(response)
+    def post(self, request):
+        request_data = JSONParser().parse(request)
+        result = self.param_check(request_data=request_data)
+        if result:
+            return result
+        response = {}
+        environmentName = request_data.get('environmentName')
+        projectCode = request_data.get('projectCode')
+        # 不传page和pagesize，默认显示第一页每页10行
+        if 'page' not in  request_data:
+            page=1
+        else:
+            page = request_data.get('page')
+        if 'pagesize' not in request_data:
+            pagesize=10
+        else:
+            pagesize =  request_data.get('pagesize')
+        # //动态变量
+        kwargs={}
+        kwargs['environmentName']=environmentName
+        kwargs['projectCode'] = projectCode
+        if 'variableName' not in request_data or request_data.get('variableName') == "":
+            pass
+        else:
+            kwargs['variableName__icontains'] = request_data.get('variableName')
+        variables=models.Variable.objects.filter(**kwargs).order_by('-id')
+        total = variables.count()
+        contacts = Paginator(variables, pagesize)
+        try:
+            variablelist = contacts.page(page)
+        except PageNotAnInteger:
+            variablelist = contacts.page(1)
+        except EmptyPage:
+            variablelist = contacts.page(contacts.num_pages)
+        except:
+            variablelist = contacts.page(1)
+        # 序列化项目信息
+        data = VariableDynamicSerializer(instance=variablelist, many=True)
+        response['data'] = data.data
+        response['msg'] = 'success'
+        response['code'] = '9999'
+        response['total'] =total
+        return JsonResponse(response)
 
 
+# 查询项目下所有的环境列表
+class getEnvironmentbyprojectcode(View):
 
-
-
-
-
-
-
+    def get(self, request):
+        response = {}
+        projectCode = request.GET.get('projectCode')
+        environments = models.Environment.objects.filter(projectCode=projectCode).order_by('-id')
+        # 序列化项目信息
+        data = ProjectEnvironmentSerializer(instance=environments, many=True)
+        response['data'] = data.data
+        response['msg'] = 'success'
+        response['code'] = '9999'
+        return JsonResponse(response)
 
 
 

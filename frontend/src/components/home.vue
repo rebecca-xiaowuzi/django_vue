@@ -25,10 +25,10 @@
                     >
                         <!--index设置当前item的下标，:route则是传一个对象进行，指定路由-->
                         <el-submenu index="1">
+
                             <template slot="title">
                                 <i class="fa fa-cogs"></i><span> 用户管理</span>
                             </template>
-
                             <el-menu-item index="/userlist" :route="{name:'userlist'}" > 用户列表
                             </el-menu-item>
                         </el-submenu>
@@ -38,9 +38,32 @@
                                 <i class="fa fa-users"></i>
                                 <span> 项目管理</span>
                             </template>
-
                             <el-menu-item index="/projectlist" :route="{name:'projectlist'}">
                                 项目列表
+                            </el-menu-item>
+                          <el-menu-item index="/variablelist" :route="{name:'variablelist'}">
+                                变量信息
+                            </el-menu-item>
+                        </el-submenu>
+                      <el-submenu index="3">
+                            <template slot="title">
+                                <i class="fa fa-users"></i>
+                                <span> 接口管理</span>
+                            </template>
+                            <el-menu-item index="/apilist" :route="{name:'apilist'}">
+                                接口列表
+                            </el-menu-item>
+                        </el-submenu>
+                      <el-submenu index="4">
+                            <template slot="title">
+                                <i class="fa fa-users"></i>
+                                <span> 用例管理</span>
+                            </template>
+                            <el-menu-item index="/testcaselist" :route="{name:'testcaselist'}">
+                                用例列表
+                            </el-menu-item>
+                          <el-menu-item index="/variablelist" :route="{name:'variablelist'}">
+                                变量信息
                             </el-menu-item>
                         </el-submenu>
 

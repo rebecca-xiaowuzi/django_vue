@@ -52,14 +52,13 @@ class getUsers(View):
        """分页查询所有用户列表"""
        def get(self,request):
         response={}
-        print(request)
         if not (request.GET.get('page') and request.GET.get('pagesize')):
             page='1'
             pagesize=str(models.User.objects.filter(status='1').count())
         else:
             page=request.GET.get('page')
             pagesize=request.GET.get('pagesize')
-        users=models.User.objects.filter(status='1').order_by('id')
+        users=models.User.objects.filter(status='1').order_by('-id')
         contacts =Paginator(users,int(pagesize))
         try:
           userlist=contacts.page(int(page))
