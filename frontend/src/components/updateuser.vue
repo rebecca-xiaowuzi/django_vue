@@ -2,7 +2,7 @@
   <div>
     <el-form  :model="updateuser">
   <el-form-item label="电话">
-    <el-input v-model="updateuser.phone"></el-input>
+    <el-input v-model="updateuser.phone" disabled></el-input>
   </el-form-item>
        <el-form-item label="邮箱">
     <el-input  v-model="updateuser.email"></el-input>

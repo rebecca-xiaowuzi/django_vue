@@ -38,12 +38,7 @@ class AddApi(View):
                      response['msg'] = api_serializer.errors
                      return JsonResponse(response)
                  if 'apiHead' not in request_data or request_data.get('apiHead')=="":
-                     response['apiCode'] = api_serializer.data.get('apiCode')
-                     response['apiname'] = api_serializer.data.get('apiname')
-                     response['code'] = '9999'
-                     response['msg'] = 'success'
-                     return JsonResponse(response)
-                     return
+                     pass
                  else:
                      for name  in request_data.get('apiHead'):
                              api_head['projectCode']=projectCode
@@ -61,11 +56,7 @@ class AddApi(View):
                                  response['msg'] = apihead_serializer.errors
                                  return JsonResponse(response)
                  if 'ApiRequestParam' not in request_data or request_data.get('ApiRequestParam')=="":
-                     response['apiCode'] = api_serializer.data.get('apiCode')
-                     response['apiname'] = api_serializer.data.get('apiname')
-                     response['code'] = '9999'
-                     response['msg'] = 'success'
-                     return JsonResponse(response)
+                     pass
                  else:
                         apirequestParam['projectCode'] = projectCode
                         apirequestParam['apiCode'] = apiCode
@@ -272,12 +263,13 @@ class UpdateApi(View):
                     response['code'] = "9902"
                     response['msg'] = api_serializer.errors
                     return JsonResponse(response)
+
                 if 'apiHead' not in request_data or request_data.get('apiHead') == "":
-                    response['apiCode'] = api_serializer.data.get('apiCode')
-                    response['apiname'] = api_serializer.data.get('apiname')
-                    response['code'] = '9999'
-                    response['msg'] = 'success'
-                    return JsonResponse(response)
+
+                    # 检查数据库中该接口是否有旧的参数，有的话，删除
+                    apiheads=ApiHead.objects.filter(Q(projectCode=projectCode), Q(apiCode=apiCode))
+                    if apiheads.count() != 0:
+                        apiheads.delete()
                 else:
                     # 请求中的所有的请求头的key
                     keys_request=[]
@@ -290,6 +282,7 @@ class UpdateApi(View):
                         api_head['value'] = request_data.get('apiHead')[name]
                         api_head['isdefault'] = 0
                         keys_request.append(name)
+
                         try:
                           apihead = ApiHead.objects.get(Q(projectCode=projectCode), Q(apiCode=apiCode),Q(name=name))
                           apihead_serializer = ApiHeadDecSerializer(instance=apihead,data=api_head,many=False)
@@ -306,17 +299,14 @@ class UpdateApi(View):
                     # 数据库中该接口所有的name值
                     keys_database=list(ApiHead.objects.filter(Q(projectCode=projectCode), Q(apiCode=apiCode)).values_list('name',flat=True))
                     no_exits_key=[y for y in keys_database if y not in keys_request]
-                    ApiHead.objects.filter(Q(name__in=no_exits_key)).delete()
+                    if len(no_exits_key)!=0:
+                     ApiHead.objects.filter(Q(name__in=no_exits_key)).delete()
+
                 apiparam = ApiRequestParam.objects.filter(Q(projectCode=projectCode), Q(apiCode=apiCode))
                 if 'ApiRequestParam' not in request_data or request_data.get('ApiRequestParam') == "":
                     # 检查数据库中该接口是否有旧的参数，有的话，删除
-                    if apiparam.count!=0:
+                    if apiparam.count()!=0:
                         apiparam.delete()
-                    response['apiCode'] = api_serializer.data.get('apiCode')
-                    response['apiname'] = api_serializer.data.get('apiname')
-                    response['code'] = '9999'
-                    response['msg'] = 'success'
-                    return JsonResponse(response)
                 else:
                     apirequestParam['projectCode'] = projectCode
                     apirequestParam['apiCode'] = apiCode
@@ -324,7 +314,10 @@ class UpdateApi(View):
                     apirequestParam['isdefault'] = 0
                     apirequestParam['name'] = "ApiRequestParam"
                     apirequestParam['value'] = str(request_data.get('ApiRequestParam'))
-                    apirequestParam_serializer = ApiRequestParamDecSerializer(instance=apiparam[0],data=apirequestParam,many=False)
+                    if apiparam.count()!=0:
+                     apirequestParam_serializer = ApiRequestParamDecSerializer(instance=apiparam[0],data=apirequestParam,many=False)
+                    else:
+                        apirequestParam_serializer = ApiRequestParamDecSerializer(data=apirequestParam)
                     if apirequestParam_serializer.is_valid():
                         apirequestParam_serializer.save()
                     else:

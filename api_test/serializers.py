@@ -139,6 +139,7 @@ class SqlConnectSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(detail="项目或者环境名称不存在")
 
 
+
 class SqlSerializer(serializers.ModelSerializer):
     """sql信息序列化"""
 

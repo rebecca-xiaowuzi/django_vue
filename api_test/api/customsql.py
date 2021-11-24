@@ -1,3 +1,5 @@
+from django.core.paginator import PageNotAnInteger, Paginator, EmptyPage
+from django.db.models import Q
 from django.http import JsonResponse
 from django.views import View
 from rest_framework.parsers import JSONParser
@@ -30,6 +32,131 @@ class  AddSqlConnect(View):
                      response['msg'] = str(e)
                      response['code'] = "9900"
                      return JsonResponse(response)
+
+
+# 查询项目数据量连接信息列表
+class getsqlconnectlist(View):
+    def param_check(self, request_data):
+        response = {}
+        try:
+            if  not request_data["environmentName"] or not request_data["projectCode"]:
+                response['msg'] = '参数有误'
+                response['code'] = '9966'
+                return JsonResponse(response)
+
+        except KeyError:
+            response['msg'] = '参数有误'
+            response['code'] = '9966'
+            return JsonResponse(response)
+    def post(self, request):
+        request_data = JSONParser().parse(request)
+        result = self.param_check(request_data=request_data)
+        if result:
+            return result
+        response = {}
+        environmentName = request_data.get('environmentName')
+        projectCode = request_data.get('projectCode')
+        # 不传page和pagesize，默认显示第一页每页10行
+        if 'page' not in  request_data:
+            page=1
+        else:
+            page = request_data.get('page')
+        if 'pagesize' not in request_data:
+            pagesize=10
+        else:
+            pagesize =  request_data.get('pagesize')
+        # //动态变量
+        kwargs={}
+        kwargs['environmentName']=environmentName
+        kwargs['projectCode'] = projectCode
+        if 'sqlconnectName' not in request_data or request_data.get('sqlconnectName') == "":
+            pass
+        else:
+            kwargs['sqlconnectName__icontains'] = request_data.get('sqlconnectName')
+        sqlconnects=SqlConnect.objects.filter(**kwargs).order_by('-id')
+        total = sqlconnects.count()
+        contacts = Paginator(sqlconnects, pagesize)
+        try:
+            sqlconnectlist = contacts.page(page)
+        except PageNotAnInteger:
+            sqlconnectlist = contacts.page(1)
+        except EmptyPage:
+            sqlconnectlist = contacts.page(contacts.num_pages)
+        except:
+            sqlconnectlist = contacts.page(1)
+        # 序列化连接信息
+        data = SqlConnectSerializer(instance=sqlconnectlist, many=True)
+        response['data'] = data.data
+        response['msg'] = 'success'
+        response['code'] = '9999'
+        response['total'] =total
+        return JsonResponse(response)
+
+# 查询连接信息详情
+class getsqlconnectDetail(View):
+    def param_check(self, request_data):
+        response = {}
+        try:
+            if not request_data["sqlconnectCode"] or not request_data["projectCode"] or not request_data["environmentName"]:
+                response['msg'] = '参数有误'
+                response['code'] = '9966'
+                return JsonResponse(response)
+
+        except KeyError:
+            response['msg'] = '参数有误'
+            response['code'] = '9966'
+            return JsonResponse(response)
+
+    def post(self, request):
+        request_data = JSONParser().parse(request)
+        result = self.param_check(request_data=request_data)
+        if result:
+            return result
+        response = {}
+        sqlconnectCode = request_data.get('sqlconnectCode')
+        projectCode = request_data.get('projectCode')
+        environmentName = request_data.get('environmentName')
+        # 判断数据是否存在,查询不到就是不存在
+        try:
+             sqlconnectinfo=SqlConnect.objects.get(Q(sqlconnectCode=sqlconnectCode),Q(projectCode=projectCode),Q(environmentName=environmentName))
+             sqlconnectinfoSer = SqlConnectSerializer(instance=sqlconnectinfo, many=False).data
+             response['data'] = sqlconnectinfoSer
+             response['msg'] = 'success'
+             response['code'] = '9999'
+             return JsonResponse(response)
+        except :
+            response['msg'] = "连接信息不存在"
+            response['code'] = '9999'
+            return JsonResponse(response)
+
+#修改连接信息
+class UpdateSqlConnect(View):
+    def post(self, request):
+        create_user = GetUserFromHeader(request).getuser()
+        response = {}
+        request_data = JSONParser().parse(request)
+        request_data['create_user'] = create_user
+        environmentName = request_data.get('environmentName')
+        projectCode = request_data.get('projectCode')
+        sqlconnectCode = request_data.get('sqlconnectCode')
+        try:
+            sqlconnectinfo = SqlConnect.objects.get(Q(projectCode=projectCode), Q(environmentName=environmentName),
+                                                    Q(sqlconnectCode=sqlconnectCode))
+            sqlconnectinfo.port=request_data.get('port')
+            sqlconnectinfo.host=request_data.get('host')
+            sqlconnectinfo.username=request_data.get('username')
+            sqlconnectinfo.password=request_data.get('password')
+            sqlconnectinfo.save()
+
+            response['code'] = '9999'
+            response['msg'] = 'success'
+            return JsonResponse(response)
+        except Exception as e:
+              response['msg'] = str(e)
+              response['code'] = "9900"
+              return JsonResponse(response)
+
+
 
 class AddSql(View):
        "新增sql"

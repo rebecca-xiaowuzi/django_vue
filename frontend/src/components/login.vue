@@ -21,7 +21,7 @@ export default {
     return {
       loginform: {
         phone: '18334705319',
-        password: '111111'
+        password: '000000'
       }
     }
   },

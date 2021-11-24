@@ -16,6 +16,9 @@ import testcaselist from '../components/testcaselist'
 import apilist from '../components/apilist'
 import addapi from '../components/addapi'
 import updateapi from '../components/updateapi'
+import SqlConnectlist from '../components/SqlConnectlist'
+import addConnectsql from '../components/addConnectsql'
+import updateConnectsql from '../components/updateConnectsql'
 
 Vue.use(Router)
 
@@ -92,6 +95,19 @@ export default new Router({
         {
           path: '/updateapi',
           component: updateapi
+        },
+        {
+          path: '/SqlConnectlist',
+          name: 'SqlConnectlist',
+          component: SqlConnectlist
+        },
+        {
+          path: '/addConnectsql',
+          component: addConnectsql
+        },
+        {
+          path: '/updateConnectsql',
+          component: updateConnectsql
         }
       ]}
 

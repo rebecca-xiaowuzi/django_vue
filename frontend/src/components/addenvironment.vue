@@ -2,7 +2,7 @@
   <div>
     <el-form  :model="addenvironment">
   <el-form-item label="项目编号">
-    <el-input v-model="addenvironment.projectCode"></el-input>
+    <el-input v-model="addenvironment.projectCode" disabled></el-input>
   </el-form-item>
       <el-form-item label="环境名称">
     <el-input  v-model="addenvironment.environmentName"></el-input>

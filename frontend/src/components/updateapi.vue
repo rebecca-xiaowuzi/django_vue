@@ -2,20 +2,14 @@
   <div>
     <el-form  :model="updateapi">
   <el-form-item label="项目编号">
-   <el-select v-model="updateapi.projectCode"  placeholder="项目编号">
-       <el-option
-      v-for="item in projectlist"
-      :key="item.projectCode"
-      :label="item.projectCode"
-      :value="item.projectCode">
-    </el-option>
-    </el-select>
+   <el-input v-model="updateapi.projectCode"  disabled>
+    </el-input>
   </el-form-item>
        <el-form-item label="接口名称">
     <el-input  v-model="updateapi.apiname"></el-input>
   </el-form-item>
-       <el-form-item label="接口编号">
-    <el-input  v-model="updateapi.apiCode"></el-input>
+       <el-form-item label="接口编号" >
+    <el-input  v-model="updateapi.apiCode" disabled></el-input>
   </el-form-item>
        <el-form-item label="httpType">
     <el-select v-model="updateapi.httpType"  placeholder="httpType">
@@ -130,7 +124,6 @@ export default {
         requestParameterType: '',
         ApiRequestParam: [{name: '', value: ''}]
       },
-      projectlist: this.projectList(),
       httpTypelist: this.getallType(),
       requestTypelist: [],
       requestParameterTypeList: []
@@ -147,24 +140,24 @@ export default {
           // 判断apiHead是否为空字符串,为空字符串需要处理下格式
           if (response.data.data.apiHead === '') { this.updateapi.apiHead = [{name: '', value: ''}] }
           // 判断params的数据格式,将接口返回的数据处理成对应的格式显示
-          if (response.data.data.requestParameterType === 'raw') { this.updateapi.ApiRequestParam = JSON.stringify(response.data.data.ApiRequestParam) }
-          if (response.data.data.requestParameterType === 'form-data') {
-            var apiParamarray = []
-            for (var key in response.data.data.ApiRequestParam) {
-              apiParamarray.push({name: key, value: response.data.data.ApiRequestParam[key]})
+          if (response.data.data.requestParameterType === 'raw') {
+            if (response.data.data.ApiRequestParam === '') {
+              this.updateapi.ApiRequestParam = ''
+            } else {
+              this.updateapi.ApiRequestParam = JSON.stringify(response.data.data.ApiRequestParam)
             }
-            this.updateapi.ApiRequestParam = apiParamarray
           }
-        }
-      })
-    },
-    projectList () {
-      this.$http.get('Project/getProjects').then(response => {
-        if (response.data.code !== '9999') {
-          return this.$message.error({message: response.data.msg, center: true})
-        } else {
-          // 获取项目下拉列表数据
-          this.projectlist = response.data.data
+          if (response.data.data.requestParameterType === 'form-data') {
+            if (response.data.data.ApiRequestParam === '') {
+              this.updateapi.ApiRequestParam = [{name: '', value: ''}]
+            } else {
+              var apiParamarray = []
+              for (var key in response.data.data.ApiRequestParam) {
+                apiParamarray.push({name: key, value: response.data.data.ApiRequestParam[key]})
+              }
+              this.updateapi.ApiRequestParam = apiParamarray
+            }
+          }
         }
       })
     },
@@ -181,64 +174,81 @@ export default {
       })
     },
     updateApi () {
-      console.log(this.updateapi.apiHead)
-      console.log(this.updateapi.ApiRequestParam)
+      var updateparam = {projectCode: this.updateapi.projectCode,
+        apiname: this.updateapi.apiname,
+        apiCode: this.updateapi.apiCode,
+        httpType: this.updateapi.httpType,
+        requestType: this.updateapi.requestType,
+        apiAddress: this.updateapi.apiAddress,
+        description: this.updateapi.description,
+        status: this.updateapi.status,
+        apiHead: '',
+        requestParameterType: this.updateapi.requestParameterType,
+        ApiRequestParam: ''}
       // 处理apihead数据格式--从数组转为字典
+      var apiHeadnew = {}
       if ((this.updateapi.apiHead.length === 1) & (this.updateapi.apiHead[0].name === '') & (this.updateapi.apiHead[0].value === '')) {
-        this.updateapi.apiHead = ''
+        delete updateparam.apiHead
       } else {
-        var apiHeadnew = {}
         for (var i = 0, len = this.updateapi.apiHead.length; i < len; i++) {
           apiHeadnew[this.updateapi.apiHead[i]['name']] = this.updateapi.apiHead[i]['value']
         }
-        this.updateapi.apiHead = apiHeadnew
+        updateparam['apiHead'] = apiHeadnew
       }
       // 处理apiparams的数据格式
       // form-data时处理数据方式
+      var apiParamnew = {}
       if (this.updateapi.requestParameterType === 'form-data') {
         if ((this.updateapi.ApiRequestParam.length === 1) & (this.updateapi.ApiRequestParam[0].name === '') & (this.updateapi.ApiRequestParam[0].value === '')) {
-          this.updateapi.ApiRequestParam = ''
+          delete updateparam.ApiRequestParam
         } else {
-          var apiParamnew = {}
           for (var j = 0, lens = this.updateapi.ApiRequestParam.length; j < lens; j++) {
             apiParamnew[this.updateapi.ApiRequestParam[j]['name']] = this.updateapi.ApiRequestParam[j]['value']
           }
-          this.updateapi.ApiRequestParam = apiParamnew
+          updateparam['ApiRequestParam'] = apiParamnew
         }
       }
       // no-params时处理数据方式
       if (this.updateapi.requestParameterType === 'no-params') {
-        this.updateapi.ApiRequestParam = ''
+        delete updateparam.ApiRequestParam
       }
-      this.$http.post('Api/UpdateApi', this.updateapi).then(response => {
+      // raw时处理数据方式
+      if (this.updateapi.requestParameterType === 'raw') {
+        if (this.updateapi.ApiRequestParam === '') { delete updateparam.ApiRequestParam } else {
+          apiParamnew = this.updateapi.ApiRequestParam
+          updateparam['ApiRequestParam'] = apiParamnew
+        }
+      }
+
+      this.$http.post('Api/UpdateApi', updateparam).then(response => {
         if (response.data.code !== '9999') {
           // 处理apihead的数据格式--从字典转为数组
-          if (this.updateapi.apiHead === '') {
+          if (!updateparam.hasOwnProperty('apiHead')) {
             this.updateapi.apiHead = [{name: '', value: ''}]
           } else {
             var apiHeadarray = []
-            for (var key in this.updateapi.apiHead) {
-              apiHeadarray.push({name: key, value: this.updateapi.apiHead[key]})
+            for (var key in updateparam.apiHead) {
+              apiHeadarray.push({name: key, value: updateparam.apiHead[key]})
             }
             this.updateapi.apiHead = apiHeadarray
           }
           // 处理apiparams的数据格式--从字典转为数组
           // form-data时处理数据方式
           if (this.updateapi.requestParameterType === 'form-data') {
-            if (this.updateapi.ApiRequestParam === '') {
+            if (!updateparam.hasOwnProperty('ApiRequestParam')) {
               this.updateapi.ApiRequestParam = [{name: '', value: ''}]
             } else {
               var apiParamarray = []
-              for (var key2 in this.updateapi.ApiRequestParam) {
-                apiParamarray.push({name: key2, value: this.updateapi.ApiRequestParam[key2]})
+              for (var key2 in updateparam.ApiRequestParam) {
+                apiParamarray.push({name: key2, value: updateparam.ApiRequestParam[key2]})
               }
               this.updateapi.ApiRequestParam = apiParamarray
             }
           }
           // no-params时处理数据方式
-          if (this.updateapi.requestParameterType === 'no-params') {
-            this.updateapi.ApiRequestParam = [{name: '', value: ''}]
-          }
+          // if (this.updateapi.requestParameterType === 'no-params') {
+          //   this.updateapi.ApiRequestParam = [{name: '', value: ''}]
+          // }
           return this.$message.error({message: response.data.msg, center: true})
         } else {
           this.$router.push('/apilist')

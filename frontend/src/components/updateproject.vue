@@ -2,7 +2,7 @@
   <div>
     <el-form  :model="updateproject">
   <el-form-item label="项目编号">
-    <el-input v-model="updateproject.projectCode"></el-input>
+    <el-input v-model="updateproject.projectCode" disabled></el-input>
   </el-form-item>
       <el-form-item label="项目名称">
     <el-input  v-model="updateproject.projectName"></el-input>

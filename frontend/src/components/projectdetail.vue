@@ -4,16 +4,16 @@
    <div>
     <el-form  :model="projectdetail">
   <el-form-item label="项目编号">
-    <el-input v-model="projectdetail.projectCode"></el-input>
+    <el-input v-model="projectdetail.projectCode" disabled></el-input>
   </el-form-item>
       <el-form-item label="项目名称">
-    <el-input  v-model="projectdetail.projectName"></el-input>
+    <el-input  v-model="projectdetail.projectName" disabled></el-input>
   </el-form-item>
        <el-form-item label="项目描述">
-    <el-input  v-model="projectdetail.projectDescription"></el-input>
+    <el-input  v-model="projectdetail.projectDescription" disabled></el-input>
         </el-form-item>
          <el-form-item label="项目用户">
-    <el-input  v-model="projectdetail.users"></el-input>
+    <el-input  v-model="projectdetail.users" disabled></el-input>
   </el-form-item>
       </el-form>
   </div>
@@ -29,7 +29,7 @@
     <div>
       <el-form :model="updateenvironment">
       <el-form-item label="环境名称">
-    <el-input v-model="updateenvironment.environmentName"></el-input>
+    <el-input v-model="updateenvironment.environmentName" disabled></el-input>
   </el-form-item>
        <el-form-item label="环境描述">
     <el-input  v-model="updateenvironment.environmentDescription" ></el-input>

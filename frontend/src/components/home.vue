@@ -44,6 +44,9 @@
                           <el-menu-item index="/variablelist" :route="{name:'variablelist'}">
                                 变量信息
                             </el-menu-item>
+                          <el-menu-item index="/SqlConnectlist" :route="{name:'SqlConnectlist'}">
+                                数据库连接信息
+                            </el-menu-item>
                         </el-submenu>
                       <el-submenu index="3">
                             <template slot="title">
