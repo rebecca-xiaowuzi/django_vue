@@ -19,6 +19,10 @@ import updateapi from '../components/updateapi'
 import SqlConnectlist from '../components/SqlConnectlist'
 import addConnectsql from '../components/addConnectsql'
 import updateConnectsql from '../components/updateConnectsql'
+import addtestcase from '../components/addtestcase'
+import childsql from '../components/childsql'
+import childfuncation from '../components/childfuncation'
+import childapi from '../components/childapi'
 
 Vue.use(Router)
 
@@ -108,6 +112,22 @@ export default new Router({
         {
           path: '/updateConnectsql',
           component: updateConnectsql
+        },
+        {
+          path: '/addtestcase',
+          component: addtestcase
+        },
+        {
+          path: '/childsql',
+          component: childsql
+        },
+        {
+          path: '/childfuncation',
+          component: childfuncation
+        },
+        {
+          path: '/childapi',
+          component: childapi
         }
       ]}
 

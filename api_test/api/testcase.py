@@ -82,7 +82,6 @@ class RunTestCase(View):
 
 
 
-
 def runtestcase(request_data):
     transferdata = {}
     response = {}
@@ -100,15 +99,24 @@ def runtestcase(request_data):
         "根据用例找到用例详情,根据order排序"
         testcasedetails = TestCaseDetail.objects.filter(testcaseCode=testcaseCode).order_by('testcaseDetailOrder')
         if testcasedetails.exists():
-            for testcasedetail in testcasedetails:
+            pass
+        else:
+            # 如果查不到用例详情，直接获取表单的用例详情数据
+            if request_data['TestCaseDetail']:
+                testcasedetails=request_data.get('TestCaseDetail')
+            else:
+                response['msg'] = '用例无内容'
+                response['code'] = "9900"
+                return JsonResponse(response)
+        for testcasedetail in testcasedetails:
                 "检查在执行前是否要增加参数,要增加,添加到transferdata"
                 if not testcasedetail.requesttransfer == "":
                     for k, v in ast.literal_eval(testcasedetail.requesttransfer).items():
                         transferdata.update({k: v})
                 if testcasedetail.type == "SQL":
                     "找到模板进行参数替换"
-                    if Sql.objects.get(sqlCode=TestCaseDetail.testcaseDetailCode):
-                        sql = Sql.objects.get(sqlCode=TestCaseDetail.testcaseDetailCode)
+                    if Sql.objects.filter(sqlCode=testcasedetail.testcaseDetailCode).exists():
+                        sql = Sql.objects.filter(sqlCode=testcasedetail.testcaseDetailCode)
                         sqlCode = sql.sqlCode
                         sqlconnectCode = SqlConnect.objects.get(Q(projectcode=projectcode),
                                                                 Q(environmentName=environmentName)).sqlconnectCode
@@ -138,7 +146,6 @@ def runtestcase(request_data):
                         transferdata.update({testcasedetail.responsetransfer: result})
                     response[testcasedetail.testcaseDetailCode] = result
                 if testcasedetail.type == "API":
-                    # print(transferdata)
                     "找到模板进行参数替换"
                     if ApiInfo.objects.get(Q(apiCode=testcasedetail.testcaseDetailCode), Q(projectCode=projectcode)):
                         api = ApiInfo.objects.get(Q(apiCode=testcasedetail.testcaseDetailCode),
@@ -194,21 +201,14 @@ def runtestcase(request_data):
                         response['code'] = "9900"
                         return JsonResponse(response)
 
-            response['msg'] = '用例执行完成'
-            response['code'] = "9999"
-            return JsonResponse(response)
-        else:
-            response['msg'] = '用例无内容'
-            response['code'] = "9900"
-            return JsonResponse(response)
+        response['msg'] = '用例执行完成'
+        response['code'] = "9999"
+        return JsonResponse(response)
     except Exception as e:
         response[testcasedetail.testcaseDetailCode] = {"请求": jsonresponse.url, "响应码": jsonresponse.status_code}
         response['msg'] = str(e)
         response['code'] = "9900"
         return JsonResponse(response)
-
-
-
 
 
 
