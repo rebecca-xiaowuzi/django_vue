@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  name: 'child_funcation'
+  name: 'child_funcationfff'
 }
 </script>
 
