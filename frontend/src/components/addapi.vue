@@ -1,4 +1,5 @@
 <template>
+<<<<<<< HEAD
   <div>
     <el-form  :model="addapi">
   <el-form-item label="项目编号">
@@ -127,10 +128,14 @@
   </el-form-item>
       </el-form>
   </div>
+=======
+
+>>>>>>> origin/master
 </template>
 
 <script>
 export default {
+<<<<<<< HEAD
   data () {
     return {
       addapi: {
@@ -322,6 +327,9 @@ export default {
     //   })
     // }
   }
+=======
+  name: 'addapi'
+>>>>>>> origin/master
 }
 </script>
 

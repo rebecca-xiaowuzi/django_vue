@@ -17,14 +17,20 @@ urlpatterns = [
     url(r'Environment/addEnvironment', manageenvironmental.addEnvironment.as_view()),
 url(r'Environment/updateEnvironment', manageenvironmental.updateEnvironment.as_view()),
 url(r'Environment/getEnvironmentDetail', manageenvironmental.getEnvironmentDetail.as_view()),
+<<<<<<< HEAD
 url(r'Environment/getEnvironmentbyprojectcode', manageenvironmental.getEnvironmentbyprojectcode.as_view()),
+=======
+>>>>>>> origin/master
     url(r'Environment/addVariable', manageenvironmental.AddVariable.as_view()),
     url(r'Environment/getVariablelist', manageenvironmental.getVariablelist.as_view()),
     url(r'Login/login', login.Login.as_view()),
     url(r'Api/addApi', api.AddApi.as_view()),
+<<<<<<< HEAD
 url(r'Api/UpdateApi', api.UpdateApi.as_view()),
 url(r'Api/GetApiDetail', api.GetApiDetail.as_view()),
 url(r'Api/getallType', api.GetallType.as_view()),
+=======
+>>>>>>> origin/master
 url(r'Api/apilist', api.apilist.as_view()),
     url(r'Api/runApi', api.RunApi.as_view()),
 url(r'Api/getapilistByprojectcode', api.getapilistByprojectcode.as_view()),

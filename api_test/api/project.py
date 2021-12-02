@@ -95,7 +95,11 @@ class getProjects(View):
         else:
             page = request.GET.get('page')
             pagesize = request.GET.get('pagesize')
+<<<<<<< HEAD
         projects = models.Project.objects.all().order_by('-id')
+=======
+        projects = models.Project.objects.all().order_by('id')
+>>>>>>> origin/master
         contacts = Paginator(projects, int(pagesize))
         try:
             projectlist = contacts.page(int(page))

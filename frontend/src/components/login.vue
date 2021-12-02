@@ -21,7 +21,11 @@ export default {
     return {
       loginform: {
         phone: '18334705319',
+<<<<<<< HEAD
         password: '000000'
+=======
+        password: '111111'
+>>>>>>> origin/master
       }
     }
   },

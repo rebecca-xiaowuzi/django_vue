@@ -127,6 +127,7 @@ class updateEnvironment(View):
             response['msg'] = '项目或者环境不存在'
             response['code'] = '9901'
             return JsonResponse(response)
+<<<<<<< HEAD
 
 # 查看项目环境信息详情
 class getEnvironmentDetail(View):
@@ -163,8 +164,49 @@ class getEnvironmentDetail(View):
             response['msg'] ="项目或者环境不存在"
             response['code'] = '9901'
             return JsonResponse(response)
+=======
+
+# 查看项目环境信息详情
+class getEnvironmentDetail(View):
+
+    def param_check(self, request_data):
+        response = {}
+        try:
+            if  not request_data["environmentName"] or not request_data["projectCode"]:
+                response['msg'] = '参数有误'
+                response['code'] = '9966'
+                return JsonResponse(response)
+>>>>>>> origin/master
+
+        except KeyError:
+            response['msg'] = '参数有误'
+            response['code'] = '9966'
+            return JsonResponse(response)
+
+<<<<<<< HEAD
+=======
+    def post(self, request):
+        request_data = JSONParser().parse(request)
+        result = self.param_check(request_data=request_data)
+        if result:
+            return result
+        response = {}
+        environmentName = request_data.get('environmentName')
+        projectCode = request_data.get('projectCode')
+        try:
+                environment = models.Environment.objects.get(Q(environmentName=environmentName) , Q(projectCode=projectCode))
+                data = ProjectEnvironmentSerializer(instance=environment, many=False)
+                response['data'] = data.data
+                response['msg'] = 'success'
+                response['code'] = '9999'
+                return JsonResponse(response)
+        except  :
+            response['msg'] ="项目或者环境不存在"
+            response['code'] = '9901'
+            return JsonResponse(response)
 
 
+>>>>>>> origin/master
 # 查询项目变量信息列表
 class getVariablelist(View):
     def param_check(self, request_data):
@@ -204,7 +246,11 @@ class getVariablelist(View):
             pass
         else:
             kwargs['variableName__icontains'] = request_data.get('variableName')
+<<<<<<< HEAD
         variables=models.Variable.objects.filter(**kwargs).order_by('-id')
+=======
+        variables=models.Variable.objects.filter(**kwargs).order_by('id')
+>>>>>>> origin/master
         total = variables.count()
         contacts = Paginator(variables, pagesize)
         try:

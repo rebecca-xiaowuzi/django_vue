@@ -29,7 +29,11 @@
     <div>
       <el-form :model="updateenvironment">
       <el-form-item label="环境名称">
+<<<<<<< HEAD
     <el-input v-model="updateenvironment.environmentName" disabled></el-input>
+=======
+    <el-input v-model="updateenvironment.environmentName"></el-input>
+>>>>>>> origin/master
   </el-form-item>
        <el-form-item label="环境描述">
     <el-input  v-model="updateenvironment.environmentDescription" ></el-input>

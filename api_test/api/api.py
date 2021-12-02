@@ -13,9 +13,14 @@ from api_test.serializers import ApiInfoSerializer, ApiHeadSerializer, ApiReques
     UpdateApiInfoSerializer, ApiHeadDecSerializer, ApiRequestParamDecSerializer
 from api_test.api.login import GetUserFromHeader
 import requests
+<<<<<<< HEAD
 from api_test.models import Environment,ApiInfo,ApiHead,ApiRequestParam
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import  api_test.models
+=======
+from api_test.models import Environment,ApiInfo
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+>>>>>>> origin/master
 class AddApi(View):
      """新增api接口"""
      def post(self,request):
@@ -227,8 +232,12 @@ class apilist(View):
             pass
         else:
             kwargs['apiname__icontains'] = request_data.get('apiname')
+<<<<<<< HEAD
 
         apis = ApiInfo.objects.filter(**kwargs).order_by('-id')
+=======
+        apis = ApiInfo.objects.filter(**kwargs).order_by('id')
+>>>>>>> origin/master
         total = apis.count()
         contacts = Paginator(apis, pagesize)
         try:
@@ -249,6 +258,7 @@ class apilist(View):
 
 
 
+<<<<<<< HEAD
 class getapilistByprojectcode(View):
     def get(self, request):
         response = {}
@@ -440,6 +450,13 @@ class UpdateApi(View):
             response['msg'] = str(e)
             response['code'] = "9900"
             return JsonResponse(response)
+=======
+
+
+
+
+
+>>>>>>> origin/master
 
 
 

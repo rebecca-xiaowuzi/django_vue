@@ -15,6 +15,7 @@ import addvariable from '../components/addvariable'
 import testcaselist from '../components/testcaselist'
 import apilist from '../components/apilist'
 import addapi from '../components/addapi'
+<<<<<<< HEAD
 import updateapi from '../components/updateapi'
 import SqlConnectlist from '../components/SqlConnectlist'
 import addConnectsql from '../components/addConnectsql'
@@ -23,6 +24,8 @@ import addtestcase from '../components/addtestcase'
 import childsql from '../components/childsql'
 import childfuncation from '../components/childfuncation'
 import childapi from '../components/childapi'
+=======
+>>>>>>> origin/master
 
 Vue.use(Router)
 
@@ -95,6 +98,7 @@ export default new Router({
         {
           path: '/addapi',
           component: addapi
+<<<<<<< HEAD
         },
         {
           path: '/updateapi',
@@ -128,6 +132,8 @@ export default new Router({
         {
           path: '/childapi',
           component: childapi
+=======
+>>>>>>> origin/master
         }
       ]}
 
