@@ -1,6 +1,6 @@
 <template>
     <el-form  :model="api">
-      <el-form-item label="前置需转接的数据">
+      <el-form-item label="前置需转换的数据">
          <el-table :data="api.requesttransfer">
 <el-table-column prop="name" label="key" min-width="40%" sortable>
                                 <template slot-scope="scope">
@@ -25,7 +25,7 @@
          </el-table>
   </el-form-item>
   <el-form-item label="接口列表">
-   <el-select v-model="api.apiCode"  placeholder="接口列表" @change="getapidetail">
+   <el-select v-model="api.apiCode"  placeholder="接口列表"  @change="getapidetail">
        <el-option
       v-for="item in apilist"
       :key="item.apiCode"
@@ -34,6 +34,7 @@
     </el-option>
     </el-select>
   </el-form-item>
+
       <el-form-item>
         <el-descriptions   :column="1"  >
           <el-descriptions-item label="api描述">{{apidetail.description}}</el-descriptions-item>
@@ -46,19 +47,19 @@
 
 </el-descriptions>
         </el-form-item>
-      <el-form-item><el-button type="primary" @click="drawer = true" style="margin-left: 16px;">运行调试</el-button>
+      <el-form-item><el-button type="primary" @click="drawerclick"  style="margin-left: 16px;">运行调试</el-button>
         <el-drawer title="请求详情信息" :visible.sync="drawer">
-  <el-select v-model="api.environmentName"  placeholder="环境列表" @change="getenvironmentList">
+  <el-select v-model="api.environmentName"  placeholder="环境列表">
        <el-option
-      v-for="item in getenvironmentList"
+      v-for="item in environmentlist"
       :key="item.environmentName"
       :label="item.environmentName"
       :value="item.environmentName">
     </el-option>
     </el-select>
-
+<el-button  type="primary"  @click="runApi">运行</el-button>
           <el-descriptions   :column="1"  >
-            <el-descriptions-item label="转换数据" >{{apidetail.requestParameterType}}</el-descriptions-item>
+            <el-descriptions-item label="转换数据" >{{responsedetail.requesttransfer}}</el-descriptions-item>
           <el-descriptions-item label="api地址" >{{responsedetail.request_url}}</el-descriptions-item>
   <el-descriptions-item label="请求方式">{{responsedetail.request_method}}</el-descriptions-item>
   <el-descriptions-item label="请求头信息" >{{responsedetail.request_heads}}</el-descriptions-item>
@@ -121,6 +122,7 @@ export default {
       drawer: false,
       environmentlist: this.getenvironmentList(),
       responsedetail: {
+        requesttransfer: {},
         request_url: '',
         request_method: '',
         request_heads: '',
@@ -128,11 +130,44 @@ export default {
         response: '',
         request_params: ''
       }
+
     }
   },
   methods: {
-    runApi () {
+    drawerclick () {
+      this.drawer = true
+    },
 
+    runApi () {
+      var runapiparam = {
+        projectCode: this.$route.query.projectCode,
+        environmentName: this.api.environmentName,
+        apiCode: this.api.apiCode,
+        requesttransfer: ''
+      }
+      // 处理requesttransfer数据格式--从数组转为字典
+      var requesttransfernew = {}
+      if ((this.api.requesttransfer.length === 1) & (this.api.requesttransfer[0].name === '') & (this.api.requesttransfer[0].value === '')) {
+        delete runapiparam.requesttransfer
+      } else {
+        for (var i = 0, len = this.api.requesttransfer.length; i < len; i++) {
+          requesttransfernew[this.api.requesttransfer[i]['name']] = this.api.requesttransfer[i]['value']
+        }
+        runapiparam['requesttransfer'] = requesttransfernew
+        this.responsedetail.requesttransfer = requesttransfernew
+      }
+      this.$http.post('Api/runApi', runapiparam).then(response => {
+        if (response.data.code !== '9999') {
+          return this.$message.error({message: response.data.msg, center: true})
+        } else {
+          this.responsedetail.request_url = response.data.request_url
+          this.responsedetail.request_method = response.data.request_method
+          this.responsedetail.response_code = response.data.response_code
+          this.responsedetail.request_params = response.data.request_params
+          this.responsedetail.response = response.data.response
+          this.responsedetail.request_heads = response.data.request_heads
+        }
+      })
     },
     getenvironmentList () {
       var projectcode = this.$route.query.projectCode
@@ -144,7 +179,7 @@ export default {
           this.environmentlist = response.data.data
           // 环境下拉框设置默认值
           if (this.environmentlist.length !== 0) {
-            this.environmentName = response.data.data[0].environmentName
+            this.api.environmentName = response.data.data[0].environmentName
           } else { this.environmentName = '' }
         }
       })

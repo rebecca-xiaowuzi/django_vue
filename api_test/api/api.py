@@ -119,7 +119,7 @@ def runApiTemplate(request_data):
         api = ApiInfo.objects.get(Q(apiCode=apicode),Q(projectCode=projectcode))
         "检查在执行前是否要增加参数,要增加,添加到transferdata"
         if  'requesttransfer' in request_data:
-            for k, v in ast.literal_eval(request_data.get('requesttransfer')).items():
+            for k, v in request_data.get('requesttransfer').items():
                 transferdata.update({k: v})
         apiAddress = api.apiAddress
         tempTemplate = Template(apiAddress)
@@ -161,7 +161,8 @@ def runApiTemplate(request_data):
         if jsonresponse.status_code==200:
            result = jsonresponse.json()
            response['response'] = jsonresponse.json()
-           response['request_params'] = str(jsonresponse.request.body, jsonresponse.encoding)
+           if jsonresponse.request.body:
+             response['request_params'] = str(jsonresponse.request.body, jsonresponse.encoding)
         "如果有值需要处理,都增加到transferdata字典中"
         if 'responsetransfer' in request_data:
             "字符串转为字典"
@@ -200,6 +201,7 @@ def runapi(request_data):
             r = requests.request("GET", url[0].ip + apiAddress, param=param, headers=head)
             return r
         else:
+
             r = requests.request("GET", url[0].ip + apiAddress, headers=head)
             return r
 
