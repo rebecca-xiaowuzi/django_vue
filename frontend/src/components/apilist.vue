@@ -35,6 +35,10 @@
       label="接口名称">
     </el-table-column>
     <el-table-column
+      prop="apiCode"
+      label="接口Code">
+    </el-table-column>
+    <el-table-column
       prop="apiAddress"
       label="接口地址">
     </el-table-column>
@@ -89,10 +93,14 @@ export default {
       projectlist: this.projectList(),
       tableData: [],
       page: 1,
-      pagesize: 10
+      pagesize: 10,
+      total: 0
     }
   },
   methods: {
+    updateapi (row) {
+      this.$router.push({path: '/updateapi', query: { projectCode: row.projectCode, apiCode: row.apiCode }})
+    },
     projectList () {
       this.$http.get('Project/getProjects').then(response => {
         if (response.data.code !== '9999') {
@@ -102,6 +110,7 @@ export default {
           this.projectlist = response.data.data
           // 项目下拉框设置默认值
           this.searchapi.projectCode = response.data.data[0].projectCode
+          this.searchApi()
         }
       })
     },
