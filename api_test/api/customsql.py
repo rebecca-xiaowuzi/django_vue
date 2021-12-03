@@ -245,7 +245,7 @@ class ExcuteSql(View):
                   response['msg'] = "请输入数据库连接编号"
                   return JsonResponse(response)
 
-              "检查在执行前是否要增加参数,要增加,添加到transferdata"
+              "检查在执行前是否要增加参数,要增加, 添加到transferdata"
               if 'requesttransfer' in request_data:
                   for k, v in request_data.get('requesttransfer').items():
                       transferdata.update({k: v})
