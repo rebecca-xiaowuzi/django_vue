@@ -1,3 +1,5 @@
+from string import Template
+
 from django.core.paginator import PageNotAnInteger, Paginator, EmptyPage
 from django.db.models import Q
 from django.http import JsonResponse
@@ -56,15 +58,7 @@ class getsqlconnectlist(View):
         response = {}
         environmentName = request_data.get('environmentName')
         projectCode = request_data.get('projectCode')
-        # 不传page和pagesize，默认显示第一页每页10行
-        if 'page' not in  request_data:
-            page=1
-        else:
-            page = request_data.get('page')
-        if 'pagesize' not in request_data:
-            pagesize=10
-        else:
-            pagesize =  request_data.get('pagesize')
+
         # //动态变量
         kwargs={}
         kwargs['environmentName']=environmentName
@@ -75,6 +69,15 @@ class getsqlconnectlist(View):
             kwargs['sqlconnectName__icontains'] = request_data.get('sqlconnectName')
         sqlconnects=SqlConnect.objects.filter(**kwargs).order_by('-id')
         total = sqlconnects.count()
+        # 不传page和pagesize，默认显示所有
+        if 'page' not in request_data:
+            page = 1
+        else:
+            page = request_data.get('page')
+        if 'pagesize' not in request_data:
+            pagesize = total
+        else:
+            pagesize = request_data.get('pagesize')
         contacts = Paginator(sqlconnects, pagesize)
         try:
             sqlconnectlist = contacts.page(page)
@@ -182,28 +185,81 @@ class AddSql(View):
                      response['code'] = "9900"
                      return JsonResponse(response)
 
+# 查询项目数据量连接信息列表
+class getsqllist(View):
+    def post(self, request):
+        request_data = JSONParser().parse(request)
+        response = {}
+        kwargs={}
+        if 'sqlName' not in request_data or request_data.get('sqlName') == "":
+            pass
+        else:
+            kwargs['sqlName__icontains'] = request_data.get('sqlName')
+        sql=Sql.objects.filter(**kwargs).order_by('-id')
+        total = sql.count()
+        # 不传page和pagesize，不分页
+        if 'page' not in request_data:
+            page = 1
+        else:
+            page = request_data.get('page')
+        if 'pagesize' not in request_data:
+            pagesize = total
+        else:
+            pagesize = request_data.get('pagesize')
+        contacts = Paginator(sql, pagesize)
+        try:
+            sqllist = contacts.page(page)
+        except PageNotAnInteger:
+            sqllist = contacts.page(1)
+        except EmptyPage:
+            sqllist = contacts.page(contacts.num_pages)
+        except:
+            sqllist = contacts.page(1)
+        # 序列化连接信息
+        data = SqlSerializer(instance=sqllist, many=True)
+        response['data'] = data.data
+        response['msg'] = 'success'
+        response['code'] = '9999'
+        response['total'] =total
+        return JsonResponse(response)
+
 
 
 class ExcuteSql(View):
        "运行sql"
        def post(self, request):
               response = {}
+              transferdata = {}
               request_data = JSONParser().parse(request)
+              if request_data['sqlCode']:
+                  sqlCode = request_data.get('sqlCode')
+                  sqlold=Sql.objects.get(sqlCode=sqlCode).sql
+              else:
+                  response['code'] = "9900"
+                  response['msg'] = "请输入sql编号"
+                  return JsonResponse(response)
+              if request_data['sqlconnectCode']:
+                  sqlconnectCode = request_data.get('sqlconnectCode')
+              else:
+                  response['code'] = "9900"
+                  response['msg'] = "请输入数据库连接编号"
+                  return JsonResponse(response)
+
+              "检查在执行前是否要增加参数,要增加,添加到transferdata"
+              if 'requesttransfer' in request_data:
+                  for k, v in request_data.get('requesttransfer').items():
+                      transferdata.update({k: v})
+              "直接找到函数,进行参数替换"
+              tempTemplate = Template(sqlold)
+              sql = tempTemplate.substitute(transferdata)
+              request_executesql = {'sql': sql, 'sqlCode': sqlCode, 'sqlconnectCode': sqlconnectCode}
               try:
-                     sqlconnectCode=request_data.get('sqlconnectCode')
-                     c=SqlConnect.objects.get(sqlconnectCode=sqlconnectCode)
-                     host=c.host
-                     port=c.port
-                     user=c.username
-                     passwd=c.password
-                     sql=request_data.get('sql')
-                     connect=pymysql.connect(host=host,port=port,user=user,password=passwd,charset="utf8")
-                     cursor = connect.cursor()
-                     cursor.execute(sql)
-                     data=cursor.fetchall()
-                     cursor.close()
-                     connect.close()
-                     response['values'] = data
+                     result = excutesql(request_executesql)
+                     "如果有值需要处理,都增加到transferdata字典中"
+                     if 'responsetransfer' in request_data:
+                         transferdata.update({request_data.get('responsetransfer'): result})
+                     response['result'] = result
+                     response['transferdata'] = transferdata
                      response['code'] = '9999'
                      response['msg'] = 'success'
                      return JsonResponse(response)

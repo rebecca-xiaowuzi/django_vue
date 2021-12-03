@@ -23,6 +23,8 @@ import addtestcase from '../components/addtestcase'
 import childsql from '../components/childsql'
 import childfuncation from '../components/childfuncation'
 import childapi from '../components/childapi'
+import sqllist from '../components/sqllist'
+import addsql from '../components/addsql'
 
 Vue.use(Router)
 
@@ -128,6 +130,15 @@ export default new Router({
         {
           path: '/childapi',
           component: childapi
+        },
+        {
+          path: '/sqllist',
+          name: 'sqllist',
+          component: sqllist
+        },
+        {
+          path: '/addsql',
+          component: addsql
         }
       ]}
 
