@@ -1,5 +1,8 @@
 <template>
     <el-form  :model="sql">
+      <el-form-item label="sql名称">
+    <el-input  v-model="sql.name"></el-input>
+  </el-form-item>
       <el-form-item label="前置需转换的数据">
          <el-table :data="sql.requesttransfer">
 <el-table-column prop="name" label="key" min-width="40%" sortable>
@@ -54,6 +57,7 @@
     </el-option>
     </el-select>
   </el-form-item>
+
 <el-button  type="primary"  @click="runSql">运行</el-button>
 <el-form-item label="sql执行结果">
    <el-input  type="textarea" autosize disabled v-model="sql.result"></el-input>
@@ -96,7 +100,8 @@ export default {
         requesttransfer: [{name: '', value: ''}],
         result: '',
         environmentName: '',
-        sqlconnectCode: ''
+        sqlconnectCode: '',
+        name:""
       },
       sqllist: this.getsqllist(),
       sqlconnectlist: [],

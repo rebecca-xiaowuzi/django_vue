@@ -1,5 +1,8 @@
 <template>
     <el-form  :model="funcation">
+        <el-form-item label="函数名称">
+    <el-input  v-model="funcation.name"></el-input>
+  </el-form-item>
       <el-form-item label="前置需转换的数据">
          <el-table :data="funcation.requesttransfer">
 <el-table-column prop="name" label="key" min-width="40%" sortable>
@@ -46,7 +49,8 @@ export default {
         responsetransfer: '',
         requesttransfer: [{name: '', value: ''}],
         funcation: '',
-        result: ''
+        result: '',
+        name:""
       }
 
     }

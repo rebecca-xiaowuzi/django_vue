@@ -1,5 +1,8 @@
 <template>
     <el-form  :model="api">
+        <el-form-item label="接口名称">
+    <el-input  v-model="api.name"></el-input>
+  </el-form-item>
       <el-form-item label="前置需转换的数据">
          <el-table :data="api.requesttransfer">
 <el-table-column prop="name" label="key" min-width="40%" sortable>
@@ -107,7 +110,8 @@ export default {
         apiCode: '',
         responsetransfer: [{name: '', value: ''}],
         requesttransfer: [{name: '', value: ''}],
-        environmentName: ''
+        environmentName: '',
+        name:''
       },
       apilist: this.apiList(),
       apidetail: {
