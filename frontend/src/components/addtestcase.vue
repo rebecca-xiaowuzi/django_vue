@@ -4,10 +4,10 @@
       <el-form-item label="项目编号">
     <el-select v-model="testcase.projectCode"  placeholder="项目编号">
        <el-option
-      v-for="(item,index) in projectlist"
+      v-for="item in projectlist"
       :key="item.projectCode"
       :label="item.projectCode"
-      :value="index">
+      :value="item.projectCode">
     </el-option>
     </el-select>
       </el-form-item>
@@ -41,7 +41,7 @@
               <span>{{element.name}}</span>
               <i class="el-icon-circle-close" @click.stop="deleteItem(index)"></i>
             </template>
-            <div ><component :is="element.type" :ref="element.type"></component> </div>
+            <div ><component :is="element.type" :ref="element.type"  :projectCode="testcase.projectCode"></component> </div>
           </el-collapse-item>
         </el-collapse>
       </draggable>
@@ -111,7 +111,6 @@ export default {
       }
     },
     handleChange: function () {
-      console.log("fffffffffffffffffffffffffffffffffffffffff")
     },
     deleteItem: function (index) {
       this.list2.splice(index, 1)
@@ -131,41 +130,119 @@ export default {
 
     },
     addtestcase() {
-      var TestCaseDetail=[]
+      var testcasedetail=[]
+
       for (var i = 0, len = this.list2.length; i < len; i++) {
-        if (this.list2[i].type = "chilapi") {
+        if (this.list2[i].type = "childapi") {
               var testcasedetail_api={}
                testcasedetail_api['type']="API"
           testcasedetail_api['testcaseDetailOrder']=i
-          testcasedetail_api['testcaseDetailCode']=this.$refs.chilapi.apiCode
-           testcasedetail_api['testcaseDetailName']=this.$refs.chilapi.name
+          testcasedetail_api['testcaseDetailCode']=this.$refs.childapi[0].api.apiCode
+           testcasedetail_api['testcaseDetailName']=this.$refs.childapi[0].api.apiname
            // 处理requesttransfer数据格式--从数组转为字典
       var requesttransfer_api = {}
-      if ((this.$refs.chilapi.requesttransfer.length === 1) & (this.$refs.chilapi.requesttransfer[0].name === '') & (this.$refs.chilapi.requesttransfer[0].value === '')) {
-        pass
-      } else {
-        for (var i = 0, len = this.$refs.chilapi.requesttransfer.length; i < len; i++) {
-          requesttransfer_api[this.$refs.chilapi.requesttransfer[i]['name']] = this.$refs.chilapi.requesttransfer[i]['value']
+      if ((this.$refs.childapi[0].api.requesttransfer.length === 1) & (this.$refs.childapi[0].api.requesttransfer[0].name === '') & (this.$refs.childapi[0].api.requesttransfer[0].value === '')) {
+        console.log('ss')
+} else {
+        for (var i = 0, len = this.$refs.childapi[0].api.requesttransfer.length; i < len; i++) {
+          requesttransfer_api[this.$refs.childapi[0].api.requesttransfer[i]['name']] = this.$refs.childapi[0].api.requesttransfer[i]['value']
 
-        }}
-      testcasedetail_api['requesttransfer']=requesttransfer_api
-          // 处理requesttransfer数据格式--从数组转为字典
-      var responsetransfer_api = {}
-      if ((this.$refs.chilapi.responsetransfer.length === 1) & (this.$refs.chilapi.responsetransfer[0].name === '') & (this.$refs.chilapi.responsetransfer[0].value === '')) {
-        pass
-      } else {
-        for (var i = 0, len = this.$refs.chilapi.responsetransfer.length; i < len; i++) {
-          responsetransfer_api[this.$refs.chilapi.responsetransfer[i]['name']] = this.$refs.chilapi.responsetransfer[i]['value']
-
-        }}
-      testcasedetail_api['responsetransfer']=responsetransfer_api
-              TestCaseDetail.push()
-          console.log(TestCaseDetail)
         }
 
       }
+      testcasedetail_api['requesttransfer']=JSON.stringify(requesttransfer_api)
+          // responsetransfer--从数组转为字典
+      var responsetransfer_api = {}
+      if ((this.$refs.childapi[0].api.responsetransfer.length === 1) & (this.$refs.childapi[0].api.responsetransfer[0].name === '') & (this.$refs.childapi[0].api.responsetransfer[0].value === '')) {
+      } else {
+        for (var i = 0, len = this.$refs.childapi[0].api.responsetransfer.length; i < len; i++) {
+          responsetransfer_api[this.$refs.childapi[0].api.responsetransfer[i]['name']] = this.$refs.childapi[0].api.responsetransfer[i]['value']
+
+        }
+
+      }
+      testcasedetail_api['responsetransfer']=JSON.stringify(responsetransfer_api)
+              testcasedetail.push(testcasedetail_api)
+        }
+        if (this.list2[i].type = "childsql"){
+             var testcasedetail_sql={}
+          testcasedetail_sql['type']="SQL"
+          testcasedetail_sql['testcaseDetailOrder']=i
+           testcasedetail_sql['testcaseDetailCode']=this.$refs.childsql[0].sql.sqlCode
+           testcasedetail_sql['testcaseDetailName']=this.$refs.childsql[0].sql.sqlname
+          // 处理requesttransfer数据格式--从数组转为字典
+      var requesttransfer_sql = {}
+      if ((this.$refs.childsql[0].sql.requesttransfer.length === 1) & (this.$refs.childsql[0].sql.requesttransfer[0].name === '') & (this.$refs.childsql[0].sql.requesttransfer[0].value === '')) {
+        pass
+      } else {
+        for (var i = 0, len = this.$refs.childsql[0].sql.requesttransfer.length; i < len; i++) {
+          requesttransfer_sql[this.$refs.childsql[0].sql.requesttransfer[i]['name']] = this.$refs.childsql[0].sql.requesttransfer[i]['value']
+
+        }
+
+      }
+         testcasedetail_sql['requesttransfer']=JSON.stringify(requesttransfer_sql)
+
+          // 处理responsetransfer数据格式--从数组转为字典
+      var responsetransfer_sql = {}
+      if ((this.$refs.childsql[0].sql.responsetransfer.length === 1) & (this.$refs.childsql[0].sql.responsetransfer[0].name === '') & (this.$refs.childsql[0].sql.responsetransfer[0].value === '')) {
+        pass
+      } else {
+
+        for (var i = 0, len = this.$refs.childsql[0].sql.responsetransfer.length; i < len; i++) {
+          responsetransfer_sql[this.$refs.childsql[0].sql.responsetransfer[i]['name']] = this.$refs.childsql[0].sql.responsetransfer[i]['value']
+
+        }
+
+      }
+           testcasedetail_sql['responsetransfer']=JSON.stringify(responsetransfer_sql)
+          testcasedetail.push(testcasedetail_sql)
+
+        }
+         if (this.list2[i].type = "childfuncation"){
+          var testcasedetail_funcation={}
+             testcasedetail_funcation['type']="FUNCATION"
+          testcasedetail_funcation['testcaseDetailOrder']=i
+           testcasedetail_funcation['testcaseDetailCode']=this.$refs.childfuncation[0].funcation.funcation
+           testcasedetail_funcation['testcaseDetailName']=this.$refs.childfuncation[0].funcation.funcationname
+          testcasedetail_funcation['responsetransfer']=this.$refs.childfuncation[0].funcation.responsetransfer
+           // 处理requesttransfer数据格式--从数组转为字典
+      var requesttransfer_funcation = {}
+      if ((this.$refs.childfuncation[0].funcation.requesttransfer.length === 1) & (this.$refs.childfuncation[0].funcation.requesttransfer[0].name === '') & (this.$refs.childfuncation[0].funcation.requesttransfer[0].value === '')) {
+     pass
+      } else {
+        for (var i = 0, len = this.$refs.childfuncation[0].funcation.requesttransfer.length; i < len; i++) {
+          requesttransfer_funcation[this.$refs.childfuncation[0].funcation.requesttransfer[i]['name']] = this.$refs.childfuncation[0].funcation.requesttransfer[i]['value']
+
+        }
+
+      }
+          testcasedetail_funcation['requesttransfer']=JSON.stringify(requesttransfer_funcation)
+          testcasedetail.push(testcasedetail_funcation)
+
+        }
+      }
+var  testcase={
+        projectCode: this.testcase.projectCode,
+        testcaseName: this.testcase.testcaseName,
+        testcaseCode: this.testcase.testcaseCode,
+        testcaseModel: this.testcase.testcaseModel,
+       TestCaseDetail:testcasedetail
+      }
+
+      this.$http.post('TestCase/AddTestCase', testcase).then(response => {
+        if (response.data.code !== '9999') {
+          return this.$message.error({message: response.data.msg, center: true})
+        } else {
+
+                this.$router.push('/testcaselist')
+        }
+      })
 
 
+    },
+    cancel(){
+this.$router.push('/testcaselist')
     }
   }
 }

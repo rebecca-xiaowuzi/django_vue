@@ -1,7 +1,7 @@
 <template>
     <el-form  :model="funcation">
         <el-form-item label="函数名称">
-    <el-input  v-model="funcation.name"></el-input>
+    <el-input  v-model="funcation.funcationname"></el-input>
   </el-form-item>
       <el-form-item label="前置需转换的数据">
          <el-table :data="funcation.requesttransfer">
@@ -50,7 +50,7 @@ export default {
         requesttransfer: [{name: '', value: ''}],
         funcation: '',
         result: '',
-        name:""
+        funcationname:""
       }
 
     }

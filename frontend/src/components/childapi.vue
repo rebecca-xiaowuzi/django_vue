@@ -1,7 +1,7 @@
 <template>
     <el-form  :model="api">
         <el-form-item label="接口名称">
-    <el-input  v-model="api.name"></el-input>
+    <el-input  v-model="api.apiname"></el-input>
   </el-form-item>
       <el-form-item label="前置需转换的数据">
          <el-table :data="api.requesttransfer">
@@ -104,6 +104,7 @@
 
 <script>
 export default {
+   props:['projectCode'],
   data () {
     return {
       api: {
@@ -111,7 +112,7 @@ export default {
         responsetransfer: [{name: '', value: ''}],
         requesttransfer: [{name: '', value: ''}],
         environmentName: '',
-        name:''
+        apiname:''
       },
       apilist: this.apiList(),
       apidetail: {
@@ -134,8 +135,8 @@ export default {
         response: '',
         request_params: ''
       }
-
     }
+
   },
   methods: {
     drawerclick () {
@@ -144,7 +145,7 @@ export default {
 
     runApi () {
       var runapiparam = {
-        projectCode: this.$route.query.projectCode,
+        projectCode:this.projectCode,
         environmentName: this.api.environmentName,
         apiCode: this.api.apiCode,
         requesttransfer: ''
@@ -174,7 +175,7 @@ export default {
       })
     },
     getenvironmentList () {
-      var projectcode = this.$route.query.projectCode
+      var projectcode=this.projectCode
       this.$http.get(`Environment/getEnvironmentbyprojectcode?projectCode=${projectcode}`).then(response => {
         if (response.data.code !== '9999') {
           return this.$message.error({message: response.data.msg, center: true})
@@ -189,7 +190,7 @@ export default {
       })
     },
     getapidetail () {
-      this.$http.post('Api/GetApiDetail', {projectCode: this.$route.query.projectCode, apiCode: this.api.apiCode}).then(response => {
+      this.$http.post('Api/GetApiDetail', {projectCode:this.projectCode, apiCode: this.api.apiCode}).then(response => {
         if (response.data.code !== '9999') {
           return this.$message.error({message: response.data.msg, center: true})
         } else {
@@ -198,7 +199,7 @@ export default {
       })
     },
     apiList () {
-      this.$http.get('Api/getapilistByprojectcode', {params: {projectCode: this.$route.query.projectCode}}).then(response => {
+      this.$http.get('Api/getapilistByprojectcode', {params: {projectCode:this.projectCode}}).then(response => {
         if (response.data.code !== '9999') { return this.$message.error({message: response.data.msg, center: true}) } else {
           this.apilist = response.data.data
           this.api.apiCode = response.data.data[0].apiCode

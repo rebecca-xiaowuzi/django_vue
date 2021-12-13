@@ -1,7 +1,7 @@
 <template>
     <el-form  :model="sql">
       <el-form-item label="sql名称">
-    <el-input  v-model="sql.name"></el-input>
+    <el-input  v-model="sql.sqlname"></el-input>
   </el-form-item>
       <el-form-item label="前置需转换的数据">
          <el-table :data="sql.requesttransfer">
@@ -92,6 +92,7 @@
 
 <script>
 export default {
+  props:['projectCode'],
   data () {
     return {
       sql: {
@@ -101,7 +102,7 @@ export default {
         result: '',
         environmentName: '',
         sqlconnectCode: '',
-        name:""
+        sqlname:""
       },
       sqllist: this.getsqllist(),
       sqlconnectlist: [],
@@ -142,7 +143,7 @@ export default {
       })
     },
     getsqlconnectlist () {
-      this.$http.post('Sql/getsqlconnectlist', {environmentName: this.sql.environmentName, projectCode: this.$route.query.projectCode}).then(response => {
+      this.$http.post('Sql/getsqlconnectlist', {environmentName: this.sql.environmentName, projectCode: this.projectCode}).then(response => {
         if (response.data.code !== '9999') { return this.$message.error({message: response.data.msg, center: true}) } else {
           this.sqlconnectlist = response.data.data
 
@@ -153,7 +154,7 @@ export default {
       })
     },
     getenvironmentList () {
-      var projectcode = this.$route.query.projectCode
+      var projectcode = this.projectCode
       this.$http.get(`Environment/getEnvironmentbyprojectcode?projectCode=${projectcode}`).then(response => {
         if (response.data.code !== '9999') {
           return this.$message.error({message: response.data.msg, center: true})
