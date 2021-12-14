@@ -41,7 +41,7 @@
               <span>{{element.name}}</span>
               <i class="el-icon-circle-close" @click.stop="deleteItem(index)"></i>
             </template>
-            <div ><component :is="element.type" :ref="element.type"  :projectCode="testcase.projectCode"></component> </div>
+            <div ><component :is="element.type"  :ref="element.type" :projectCode="testcase.projectCode"></component> </div>
           </el-collapse-item>
         </el-collapse>
       </draggable>
@@ -133,7 +133,7 @@ export default {
       var testcasedetail=[]
 
       for (var i = 0, len = this.list2.length; i < len; i++) {
-        if (this.list2[i].type = "childapi") {
+        if (this.list2[i].type === "childapi") {
               var testcasedetail_api={}
                testcasedetail_api['type']="API"
           testcasedetail_api['testcaseDetailOrder']=i
@@ -142,7 +142,6 @@ export default {
            // 处理requesttransfer数据格式--从数组转为字典
       var requesttransfer_api = {}
       if ((this.$refs.childapi[0].api.requesttransfer.length === 1) & (this.$refs.childapi[0].api.requesttransfer[0].name === '') & (this.$refs.childapi[0].api.requesttransfer[0].value === '')) {
-        console.log('ss')
 } else {
         for (var i = 0, len = this.$refs.childapi[0].api.requesttransfer.length; i < len; i++) {
           requesttransfer_api[this.$refs.childapi[0].api.requesttransfer[i]['name']] = this.$refs.childapi[0].api.requesttransfer[i]['value']
@@ -164,7 +163,7 @@ export default {
       testcasedetail_api['responsetransfer']=JSON.stringify(responsetransfer_api)
               testcasedetail.push(testcasedetail_api)
         }
-        if (this.list2[i].type = "childsql"){
+        if (this.list2[i].type === "childsql"){
              var testcasedetail_sql={}
           testcasedetail_sql['type']="SQL"
           testcasedetail_sql['testcaseDetailOrder']=i
@@ -173,7 +172,6 @@ export default {
           // 处理requesttransfer数据格式--从数组转为字典
       var requesttransfer_sql = {}
       if ((this.$refs.childsql[0].sql.requesttransfer.length === 1) & (this.$refs.childsql[0].sql.requesttransfer[0].name === '') & (this.$refs.childsql[0].sql.requesttransfer[0].value === '')) {
-        pass
       } else {
         for (var i = 0, len = this.$refs.childsql[0].sql.requesttransfer.length; i < len; i++) {
           requesttransfer_sql[this.$refs.childsql[0].sql.requesttransfer[i]['name']] = this.$refs.childsql[0].sql.requesttransfer[i]['value']
@@ -186,7 +184,6 @@ export default {
           // 处理responsetransfer数据格式--从数组转为字典
       var responsetransfer_sql = {}
       if ((this.$refs.childsql[0].sql.responsetransfer.length === 1) & (this.$refs.childsql[0].sql.responsetransfer[0].name === '') & (this.$refs.childsql[0].sql.responsetransfer[0].value === '')) {
-        pass
       } else {
 
         for (var i = 0, len = this.$refs.childsql[0].sql.responsetransfer.length; i < len; i++) {
@@ -199,7 +196,7 @@ export default {
           testcasedetail.push(testcasedetail_sql)
 
         }
-         if (this.list2[i].type = "childfuncation"){
+         if (this.list2[i].type === "childfuncation"){
           var testcasedetail_funcation={}
              testcasedetail_funcation['type']="FUNCATION"
           testcasedetail_funcation['testcaseDetailOrder']=i
@@ -209,7 +206,6 @@ export default {
            // 处理requesttransfer数据格式--从数组转为字典
       var requesttransfer_funcation = {}
       if ((this.$refs.childfuncation[0].funcation.requesttransfer.length === 1) & (this.$refs.childfuncation[0].funcation.requesttransfer[0].name === '') & (this.$refs.childfuncation[0].funcation.requesttransfer[0].value === '')) {
-     pass
       } else {
         for (var i = 0, len = this.$refs.childfuncation[0].funcation.requesttransfer.length; i < len; i++) {
           requesttransfer_funcation[this.$refs.childfuncation[0].funcation.requesttransfer[i]['name']] = this.$refs.childfuncation[0].funcation.requesttransfer[i]['value']
