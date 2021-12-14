@@ -104,7 +104,7 @@
 
 <script>
 export default {
-   props:['projectCode'],
+  props: ['projectCode'],
   data () {
     return {
       api: {
@@ -112,7 +112,7 @@ export default {
         responsetransfer: [{name: '', value: ''}],
         requesttransfer: [{name: '', value: ''}],
         environmentName: '',
-        apiname:''
+        apiname: ''
       },
       apilist: this.apiList(),
       apidetail: {
@@ -136,7 +136,6 @@ export default {
         request_params: ''
       }
     }
-
   },
   methods: {
     drawerclick () {
@@ -145,7 +144,7 @@ export default {
 
     runApi () {
       var runapiparam = {
-        projectCode:this.projectCode,
+        projectCode: this.projectCode,
         environmentName: this.api.environmentName,
         apiCode: this.api.apiCode,
         requesttransfer: ''
@@ -175,7 +174,7 @@ export default {
       })
     },
     getenvironmentList () {
-      var projectcode=this.projectCode
+      var projectcode = this.projectCode
       this.$http.get(`Environment/getEnvironmentbyprojectcode?projectCode=${projectcode}`).then(response => {
         if (response.data.code !== '9999') {
           return this.$message.error({message: response.data.msg, center: true})
@@ -190,7 +189,7 @@ export default {
       })
     },
     getapidetail () {
-      this.$http.post('Api/GetApiDetail', {projectCode:this.projectCode, apiCode: this.api.apiCode}).then(response => {
+      this.$http.post('Api/GetApiDetail', {projectCode: this.projectCode, apiCode: this.api.apiCode}).then(response => {
         if (response.data.code !== '9999') {
           return this.$message.error({message: response.data.msg, center: true})
         } else {
@@ -199,7 +198,7 @@ export default {
       })
     },
     apiList () {
-      this.$http.get('Api/getapilistByprojectcode', {params: {projectCode:this.projectCode}}).then(response => {
+      this.$http.get('Api/getapilistByprojectcode', {params: {projectCode: this.projectCode}}).then(response => {
         if (response.data.code !== '9999') { return this.$message.error({message: response.data.msg, center: true}) } else {
           this.apilist = response.data.data
           this.api.apiCode = response.data.data[0].apiCode

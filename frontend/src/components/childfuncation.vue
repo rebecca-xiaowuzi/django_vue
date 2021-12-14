@@ -50,7 +50,7 @@ export default {
         requesttransfer: [{name: '', value: ''}],
         funcation: '',
         result: '',
-        funcationname:""
+        funcationname: ''
       }
 
     }

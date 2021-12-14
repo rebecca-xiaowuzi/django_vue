@@ -92,7 +92,7 @@
 
 <script>
 export default {
-  props:['projectCode'],
+  props: ['projectCode'],
   data () {
     return {
       sql: {
@@ -102,7 +102,7 @@ export default {
         result: '',
         environmentName: '',
         sqlconnectCode: '',
-        sqlname:""
+        sqlname: ''
       },
       sqllist: this.getsqllist(),
       sqlconnectlist: [],
