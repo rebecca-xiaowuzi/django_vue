@@ -92,7 +92,7 @@
 
 <script>
 export default {
-  props: ['projectCode'],
+  props: {projectCode:String,sql_default:Object},
   data () {
     return {
       sql: {
@@ -106,10 +106,13 @@ export default {
       },
       sqllist: this.getsqllist(),
       sqlconnectlist: [],
-      environmentlist: this.getenvironmentList()
+      environmentlist: this.getenvironmentList(),
     }
   },
   methods: {
+    getsqldefault(){if (this.sql_default){
+       this.sql= JSON.parse(JSON.stringify({...this.sql,...this.sql_default}))
+      }},
     runSql () {
       var runsqlparam = {
         requesttransfer: '',
@@ -139,6 +142,7 @@ export default {
         if (response.data.code !== '9999') { return this.$message.error({message: response.data.msg, center: true}) } else {
           this.sqllist = response.data.data
           this.sql.sqlCode = response.data.data[0].sqlCode
+          this.getsqldefault()
         }
       })
     },

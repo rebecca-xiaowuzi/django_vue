@@ -1,4 +1,5 @@
 <template>
+  <div>
     <el-form  :model="api">
         <el-form-item label="接口名称">
     <el-input  v-model="api.apiname"></el-input>
@@ -99,12 +100,13 @@
          </el-table>
   </el-form-item>
     </el-form>
+  </div>
 
 </template>
 
 <script>
 export default {
-  props: ['projectCode'],
+  props: {projectCode:String,api_default:Object},
   data () {
     return {
       api: {
@@ -141,7 +143,12 @@ export default {
     drawerclick () {
       this.drawer = true
     },
-
+     getapidefault(){
+      if (this.api_default){
+       this.api= JSON.parse(JSON.stringify({...this.api,...this.api_default}))
+        this.getapidetail()
+      }
+     },
     runApi () {
       var runapiparam = {
         projectCode: this.projectCode,
@@ -203,8 +210,12 @@ export default {
           this.apilist = response.data.data
           this.api.apiCode = response.data.data[0].apiCode
           this.getapidetail()
+          this.getapidefault()
         }
       })
+
+
+
     },
     addresponsetransfer () {
       let responsetransfer = {name: '', value: ''}

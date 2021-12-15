@@ -1,21 +1,15 @@
 <template>
   <div class="row">
     <el-form  :model="testcase">
-      <el-form-item label="项目编号">
-    <el-select v-model="testcase.projectCode"  placeholder="项目编号">
-       <el-option
-      v-for="item in projectlist"
-      :key="item.projectCode"
-      :label="item.projectCode"
-      :value="item.projectCode">
-    </el-option>
-    </el-select>
-      </el-form-item>
+       <el-form-item label="项目编号">
+   <el-input v-model="testcase.projectCode"  disabled>
+    </el-input>
+       </el-form-item>
        <el-form-item label="用例名称">
     <el-input  v-model="testcase.testcaseName"></el-input>
   </el-form-item>
        <el-form-item label="用例编号">
-    <el-input  v-model="testcase.testcaseCode"></el-input>
+    <el-input  v-model="testcase.testcaseCode" disabled></el-input>
   </el-form-item>
        <el-form-item label="所属模块">
     <el-input  v-model="testcase.testcaseModel"></el-input>
@@ -31,18 +25,19 @@
         <el-collapse
           class="list-group-item left"
           v-for="(element,index) in list2"
-          :key="index">
+          :key="index"
+        >
           <el-collapse-item :name="element.id">
             <template slot="title">
               <span>{{element.name}}</span>
               <i class="el-icon-circle-close" @click.stop="deleteItem(index)"></i>
             </template>
-            <div ><component :is="element.type"  :ref="element.type" :projectCode="testcase.projectCode"></component> </div>
+            <div ><component :is="element.type"  :ref="element.type" :projectCode="testcase.projectCode" :api_default="api" :sql_default="sql" :funcation_default="funcation"></component> </div>
           </el-collapse-item>
         </el-collapse>
       </draggable>
     </div>
-<el-button type="primary" @click="addtestcase">新增用例</el-button>
+<el-button type="primary" @click="updatetestcase">更新用例</el-button>
     <el-button @click="cancel">取消</el-button>
           </el-form>
     <div class="col-5">
@@ -70,7 +65,7 @@ export default {
   data () {
     return {
       testcase: {
-        projectCode: '',
+        projectCode: this.gettestcasedetail(),
         testcaseName: '',
         testcaseCode: '',
         testcaseModel: ''
@@ -83,30 +78,92 @@ export default {
       list2: [],
       activeNames: [],
       count: 0,
-      projectlist: this.projectList(),
-      index: 0
+      index: 0,
+      api: {},
+      sql:{},
+      funcation:{}
+
     }
   },
 
   methods: {
+        // 获取详情展示
+    gettestcasedetail () {
+      this.$http.post('TestCase/GetTestcaseDetail', {projectCode: this.$route.query.projectCode, testcaseCode: this.$route.query.testcaseCode}).then(response => {
+        if (response.data.code !== '9999') {
+          return this.$message.error({message: response.data.msg, center: true})
+        } else {
+          this.testcase = response.data.data
+        //  获取TestCaseDetail
+          for (var i=0, len = response.data.data.TestCaseDetail.length; i < len; i++){
+            if  (response.data.data.TestCaseDetail[i].type==='API'){
+              //处理所有的接口返回的数据，显示在页面中
+              this.api.apiCode=response.data.data.TestCaseDetail[i].testcaseDetailCode
+              this.api.apiname=response.data.data.TestCaseDetail[i].testcaseDetailName
+              if (response.data.data.TestCaseDetail[i].requesttransfer!=' '){
+                var list_requesttransfer=[]
+                var json_requesttransfer_api=JSON.parse(response.data.data.TestCaseDetail[i].requesttransfer)
+                for (var requesttransfer_api in json_requesttransfer_api) {
+                list_requesttransfer.push({name: requesttransfer_api, value: json_requesttransfer_api[requesttransfer_api]})
+              }
+              this.api.requesttransfer=list_requesttransfer
+              }
+              if (response.data.data.TestCaseDetail[i].responsetransfer!=' '){
+                var list_responsetransfer=[]
+                var json_responsetransfer_api=JSON.parse(response.data.data.TestCaseDetail[i].responsetransfer)
+                for (var responsetransfer_api in json_responsetransfer_api) {
+                list_responsetransfer.push({name: responsetransfer_api, value: json_responsetransfer_api[responsetransfer_api]})
+              }
+              this.api.responsetransfer=list_responsetransfer
+              }
+              this.list2.push({name: "接口", type: "childapi"})
+
+            }
+            else if (response.data.data.TestCaseDetail[i].type==='SQL') {
+              this.sql.sqlCode=response.data.data.TestCaseDetail[i].testcaseDetailCode
+              this.sql.sqlname=response.data.data.TestCaseDetail[i].testcaseDetailName
+              if (response.data.data.TestCaseDetail[i].requesttransfer!=' '){
+                var list_requesttransfer_sql=[]
+                var json_requesttransfer_sql=JSON.parse(response.data.data.TestCaseDetail[i].requesttransfer)
+                for (var requesttransfer_sql in json_requesttransfer_sql) {
+                list_requesttransfer_sql.push({name: requesttransfer_sql, value: json_requesttransfer_sql[requesttransfer_sql]})
+              }
+              this.sql.requesttransfer=list_requesttransfer_sql
+              }
+              if (response.data.data.TestCaseDetail[i].responsetransfer!=' '){
+                var list_responsetransfer_sql=[]
+                var json_responsetransfer_sql=JSON.parse(response.data.data.TestCaseDetail[i].responsetransfer)
+                for (var responsetransfer_sql in json_responsetransfer_sql) {
+                list_responsetransfer_sql.push({name: responsetransfer_sql, value: json_responsetransfer_sql[responsetransfer_sql]})
+              }
+              this.sql.responsetransfer=list_responsetransfer_sql
+              }
+              this.list2.push({name: "sql", type: "childsql"})
+            }
+            else if (response.data.data.TestCaseDetail[i].type==='FUNCATION'){
+              this.funcation.funcationname=response.data.data.TestCaseDetail[i].testcaseDetailName
+              this.funcation.funcation=response.data.data.TestCaseDetail[i].testcaseDetailCode
+              this.funcation.responsetransfer=response.data.data.TestCaseDetail[i].responsetransfer
+              if (response.data.data.TestCaseDetail[i].requesttransfer!=' '){
+                var list_requesttransfer_f=[]
+                var json_requesttransfer_f=JSON.parse(response.data.data.TestCaseDetail[i].requesttransfer)
+                for (var requesttransfer_f in json_requesttransfer_f) {
+                list_requesttransfer_f.push({name: requesttransfer_f, value: json_requesttransfer_f[requesttransfer_f]})
+              }
+              this.funcation.requesttransfer=list_requesttransfer_f
+              }
+              this.list2.push({name: "函数", type: "childfuncation"})
+            }
+          }
+        }
+      })
+    },
     handleChange: function () {
     },
     deleteItem: function (index) {
       this.list2.splice(index, 1)
     },
-    projectList () {
-      this.$http.get('Project/getProjects').then(response => {
-        if (response.data.code !== '9999') {
-          return this.$message.error({message: response.data.msg, center: true})
-        } else {
-          // 获取项目下拉列表数据
-          this.projectlist = response.data.data
-          // 项目下拉框设置默认值
-          this.testcase.projectCode = response.data.data[0].projectCode
-        }
-      })
-    },
-    addtestcase () {
+    updatetestcase () {
       var TestCaseDetail = []
       for (var i = 0, len = this.list2.length; i < len; i++) {
         if (this.list2[i].type === 'childapi') {

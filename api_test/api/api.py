@@ -87,44 +87,42 @@ class AddApi(View):
              response['code'] = "9900"
              return JsonResponse(response)
 
+# 接口调试接口
 class RunApi(View):
       "接口调用调试"
       def post(self,request):
-          response={}
           request_data = JSONParser().parse(request)
           jsonresponse = runApiTemplate(request_data)
-          # 请求成功,返回如下字段,供调试接口参考
-          if jsonresponse.get('status_code')==200:
-              response['response'] = jsonresponse.get('response')
-              response['request_params'] = jsonresponse.get('request_params')
-          response['request_url']=jsonresponse.get('request_url')
-          response['request_method'] = jsonresponse.get('request_method')
-          response['request_heads'] =jsonresponse.get('request_heads')
-             # 请求异常,返回状态吗
-          response['response_code'] = jsonresponse.get('status_code')
-          response['msg'] = "请求成功"
-          response['code']="9999"
-          return JsonResponse(response)
+          return JsonResponse(jsonresponse)
 
 
-
+"""
+1、根据requesttransfer将接口模板进行替换
+2、接口执行的结果返回
+3、返回组装后的transferdata
+"""
 def runApiTemplate(request_data):
+
     response={}
-    transferdata={}
+    if 'transferdata' in request_data:
+     transferdata =request_data.get('transferdata')
+    else:
+        transferdata={}
     apicode=request_data.get('apiCode')
     projectcode = request_data.get('projectCode')
     environmentName = request_data.get('environmentName')
     "找到模板进行参数替换"
-    if ApiInfo.objects.get(Q(apiCode=apicode), Q(projectCode=projectcode)):
+    try:
         api = ApiInfo.objects.get(Q(apiCode=apicode),Q(projectCode=projectcode))
         "检查在执行前是否要增加参数,要增加,添加到transferdata"
         if  'requesttransfer' in request_data:
-            for k, v in request_data.get('requesttransfer').items():
+            for k, v in ast.literal_eval(request_data.get('requesttransfer')).items():
                 transferdata.update({k: v})
         apiAddress = api.apiAddress
         tempTemplate = Template(apiAddress)
         "替换后的apiaddress"
         apiAddress = tempTemplate.safe_substitute(transferdata)
+
         "requestType"
         requestType = api.requestType
         apiHeads = ApiHead.objects.filter(apiCode=api.apiCode).filter(projectCode=projectcode)
@@ -166,6 +164,7 @@ def runApiTemplate(request_data):
         "如果有值需要处理,都增加到transferdata字典中"
         if 'responsetransfer' in request_data:
             "字符串转为字典"
+
             for k, v in ast.literal_eval(request_data.get('responsetransfer')).items():
                 transferdata.update({k: jmespath.search(v, result)})
         response['transferdata'] = transferdata
@@ -173,9 +172,11 @@ def runApiTemplate(request_data):
         response['request_method'] = jsonresponse.request.method
         response['request_heads'] = jsonresponse.request.headers.__dict__
         response['status_code']=jsonresponse.status_code
-        return  response
-    else:
-        response['msg'] = 'API不存在'
+        response['msg'] = "请求成功"
+        response['code'] = "9999"
+        return response
+    except Exception as e:
+        response['msg'] = str(e)
         response['code'] = "9900"
         return response
 
@@ -336,7 +337,7 @@ class GetApiDetail(View):
              return JsonResponse(response)
         except :
             response['msg'] = "api不存在"
-            response['code'] = '9999'
+            response['code'] = '9900'
             return JsonResponse(response)
 
 

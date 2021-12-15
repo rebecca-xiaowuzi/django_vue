@@ -163,10 +163,14 @@ class TestCaseSerializer(serializers.ModelSerializer):
         else:
             raise serializers.ValidationError("该项目不存在")
 
-
+class TestCaseDetailDesSerializer(serializers.ModelSerializer):
+    """用例详情信息序列化"""
+    class Meta:
+        model=TestCaseDetail
+        fields = '__all__'
 
 class TestCaseDetailSerializer(serializers.ModelSerializer):
-    """用例详情信息序列化"""
+    """用例详情信息反序列化"""
     responsetransfer = serializers.CharField(required=False,write_only=True)
     requesttransfer = serializers.CharField(required=False,write_only=True)
     class Meta:

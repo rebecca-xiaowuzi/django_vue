@@ -25,7 +25,7 @@ import childfuncation from '../components/childfuncation'
 import childapi from '../components/childapi'
 import sqllist from '../components/sqllist'
 import addsql from '../components/addsql'
-
+import updatetestcase from '../components/updatetestcase'
 Vue.use(Router)
 
 export default new Router({
@@ -139,6 +139,10 @@ export default new Router({
         {
           path: '/addsql',
           component: addsql
+        },
+        {
+          path: '/updatetestcase',
+          component: updatetestcase
         }
       ]}
 

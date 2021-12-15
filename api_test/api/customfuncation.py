@@ -27,52 +27,60 @@ class AddFuncation(View):
                      response['msg'] = funcation_serializer.errors
                      return JsonResponse(response)
 
+
 """函数运行接口"""
 class RunFuncation(View):
        def post(self,request):
-              response = {}
-              transferdata = {}
               request_data = JSONParser().parse(request)
-              if request_data['funcation']:
-               Funcation=request_data.get('funcation')
-              else:
-               response['code'] = "9900"
-               response['msg'] = "请输入函数"
-               return JsonResponse(response)
-              if request_data['responsetransfer']:
-                responsetransfer=request_data.get('responsetransfer')
-              else:
-               response['code'] = "9900"
-               response['msg'] = "请输入转换名称"
-               return JsonResponse(response)
-              "检查在执行前是否要增加参数,要增加,添加到transferdata"
-              if 'requesttransfer' in request_data:
-                  for k, v in request_data.get('requesttransfer').items():
-                      transferdata.update({k: v})
-              "直接找到函数,进行参数替换"
-              tempTemplate = Template(Funcation)
-              funcation = tempTemplate.substitute(transferdata)
-              "执行函数"
-              try:
-                  result = eval(funcation)
-                  "如果有值需要处理,都增加到transferdata字典中"
-                  transferdata.update({responsetransfer: result})
-                  response['result'] = result
-                  response['transferdata'] = transferdata
-                  response['code'] = "9999"
-                  response['msg'] = "success"
-                  return JsonResponse(response)
-              except:
-                  response['code'] = "9900"
-                  response['msg'] = "函数不存在"
-                  return JsonResponse(response)
+              return JsonResponse(runfuncation(request_data))
 
 
 
 
-
+"""
+1、根据requesttransfer将函数模板进行替换
+2、函数执行的结果返回
+3、返回组装后的transferdata
+"""
 def runfuncation(request_data):
-        return eval(request_data.get("funcation"))
+    response = {}
+    if 'transferdata' in request_data:
+        transferdata = request_data.get('transferdata')
+    else:
+        transferdata = {}
+    if 'funcation' in request_data:
+        Funcation = request_data.get('funcation')
+    else:
+        response['code'] = "9900"
+        response['msg'] = "请输入函数"
+        return response
+    if 'responsetransfer' in request_data:
+        responsetransfer = request_data.get('responsetransfer')
+    else:
+        response['code'] = "9900"
+        response['msg'] = "请输入转换名称"
+        return response
+    "检查在执行前是否要增加参数,要增加,添加到transferdata"
+    if 'requesttransfer' in request_data:
+        for k, v in ast.literal_eval(request_data.get('requesttransfer')).items():
+            transferdata.update({k: v})
+    "直接找到函数,进行参数替换"
+    tempTemplate = Template(Funcation)
+    funcation = tempTemplate.substitute(transferdata)
+    "执行函数"
+    try:
+        result = eval(funcation)
+        "如果有值需要处理,都增加到transferdata字典中"
+        transferdata.update({responsetransfer: result})
+        response['result'] = result
+        response['transferdata'] = transferdata
+        response['code'] = "9999"
+        response['msg'] = "success"
+        return response
+    except:
+        response['code'] = "9900"
+        response['msg'] = "函数不存在"
+        return response
 
 
 

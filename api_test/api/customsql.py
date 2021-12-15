@@ -68,6 +68,7 @@ class getsqlconnectlist(View):
         else:
             kwargs['sqlconnectName__icontains'] = request_data.get('sqlconnectName')
         sqlconnects=SqlConnect.objects.filter(**kwargs).order_by('-id')
+        print(sqlconnects)
         total = sqlconnects.count()
         # 不传page和pagesize，默认显示所有
         if 'page' not in request_data:
@@ -75,7 +76,10 @@ class getsqlconnectlist(View):
         else:
             page = request_data.get('page')
         if 'pagesize' not in request_data:
-            pagesize = total
+            if total>0:
+              pagesize = total
+            else:
+                pagesize=1
         else:
             pagesize = request_data.get('pagesize')
         contacts = Paginator(sqlconnects, pagesize)
@@ -228,47 +232,62 @@ class getsqllist(View):
 class ExcuteSql(View):
        "运行sql"
        def post(self, request):
-              response = {}
-              transferdata = {}
               request_data = JSONParser().parse(request)
-              if request_data['sqlCode']:
-                  sqlCode = request_data.get('sqlCode')
-                  sqlold=Sql.objects.get(sqlCode=sqlCode).sql
-              else:
-                  response['code'] = "9900"
-                  response['msg'] = "请输入sql编号"
-                  return JsonResponse(response)
-              if request_data['sqlconnectCode']:
-                  sqlconnectCode = request_data.get('sqlconnectCode')
-              else:
-                  response['code'] = "9900"
-                  response['msg'] = "请输入数据库连接编号"
-                  return JsonResponse(response)
-
-              "检查在执行前是否要增加参数,要增加, 添加到transferdata"
-              if 'requesttransfer' in request_data:
-                  for k, v in request_data.get('requesttransfer').items():
-                      transferdata.update({k: v})
-              "直接找到函数,进行参数替换"
-              tempTemplate = Template(sqlold)
-              sql = tempTemplate.substitute(transferdata)
-              request_executesql = {'sql': sql, 'sqlCode': sqlCode, 'sqlconnectCode': sqlconnectCode}
-              try:
-                     result = excutesql(request_executesql)
-                     "如果有值需要处理,都增加到transferdata字典中"
-                     if 'responsetransfer' in request_data:
-                         transferdata.update({request_data.get('responsetransfer'): result})
-                     response['result'] = result
-                     response['transferdata'] = transferdata
-                     response['code'] = '9999'
-                     response['msg'] = 'success'
-                     return JsonResponse(response)
-              except Exception as e:
-                     response['code'] = '9900'
-                     response['msg'] = str(e)
+              return JsonResponse(runSqlTemplate(request_data))
 
 
+"""
+1、根据requesttransfer将sql模板进行替换
+2、sql执行的结果返回
+3、返回组装后的transferdata
+"""
+def runSqlTemplate(request_data):
+    response = {}
+    if 'transferdata' in request_data:
+        transferdata = request_data.get('transferdata')
+    else:
+        transferdata = {}
+    if 'sqlCode' in request_data:
+        sqlCode = request_data.get('sqlCode')
+        sqlold = Sql.objects.get(sqlCode=sqlCode).sql
+    else:
+        response['code'] = "9900"
+        response['msg'] = "请输入sql编号"
+        return response
+    if 'sqlconnectCode' in request_data:
+        sqlconnectCode = request_data.get('sqlconnectCode')
+    else:
+        response['code'] = "9900"
+        response['msg'] = "请输入数据库连接编号"
+        return response
 
+    "检查在执行前是否要增加参数,要增加, 添加到transferdata"
+    if 'requesttransfer' in request_data:
+        for k, v in ast.literal_eval(request_data.get('requesttransfer')).items():
+            transferdata.update({k: v})
+    "直接找到函数,进行参数替换"
+    tempTemplate = Template(sqlold)
+    sql = tempTemplate.substitute(transferdata)
+    request_executesql = {'sql': sql, 'sqlCode': sqlCode, 'sqlconnectCode': sqlconnectCode}
+    try:
+        result = excutesql(request_executesql)
+        "如果有值需要处理,都增加到transferdata字典中"
+        if 'responsetransfer' in request_data:
+            transferdata.update({request_data.get('responsetransfer'): result})
+        response['result'] = result
+        response['transferdata'] = transferdata
+        response['code'] = '9999'
+        response['msg'] = 'success'
+        return response
+    except Exception as e:
+        response['code'] = '9900'
+        response['msg'] = str(e)
+        return response
+
+
+
+
+"""返回sql执行的结果"""
 def excutesql(request_data):
        response={}
        try:
@@ -289,6 +308,7 @@ def excutesql(request_data):
        except Exception as e:
               response['code'] = '9900'
               response['msg'] = str(e)
+              return response
 
 
 

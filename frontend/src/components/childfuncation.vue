@@ -43,19 +43,33 @@
 
 <script>
 export default {
+  props: {funcation_default:Object},
   data () {
     return {
+      creates:this.getfuncationdefault(),
       funcation: {
         responsetransfer: '',
         requesttransfer: [{name: '', value: ''}],
         funcation: '',
         result: '',
         funcationname: ''
-      }
+      },
+      crate:this.cr()
+
 
     }
   },
-  methods: { addrequesttransfer () {
+  methods: {
+    cr(){
+       this.$http.post('Sql/getsqllist', {}).then(response => {
+         this.getfuncationdefault()
+       })
+    },
+    getfuncationdefault(){if (this.funcation_default){
+       this.funcation= JSON.parse(JSON.stringify({...this.funcation,...this.funcation_default}))
+
+      }},
+    addrequesttransfer () {
     let requesttransfer = {name: '', value: ''}
     this.funcation.requesttransfer.push(requesttransfer)
   },

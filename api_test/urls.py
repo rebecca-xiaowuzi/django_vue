@@ -41,4 +41,6 @@ url(r'Sql/getsqllist', customsql.getsqllist.as_view()),
     url(r'TestCase/runTestCase', testcase.RunTestCase.as_view()),
     url(r'TestCaseSet/AddTestCaseSet', testcaseset.AddTestCaseSet.as_view()),
     url(r'TestCaseSet/RunTestCaseSet', testcaseset.RunTestCaseSet.as_view()),
+url(r'TestCase/testcaselist', testcase.testcaselist.as_view()),
+url(r'TestCase/GetTestcaseDetail', testcase.GetTestcaseDetail.as_view()),
 ]
