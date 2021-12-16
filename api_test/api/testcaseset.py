@@ -8,6 +8,7 @@ from rest_framework.parsers import JSONParser
 from api_test.api.login import GetUserFromHeader
 from api_test.models import TestCaseSet
 from api_test.api.testcase import runtestcase
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 """测试用例集合模块"""
 class  AddTestCaseSet(View):
        "新增用例集合"
@@ -70,7 +71,47 @@ class  RunTestCaseSet(View):
 
 
 
+# 查询用例集合列表
+class testcasesetlist(View):
+    def post(self, request):
+        response = {}
+        request_data = JSONParser().parse(request)
+        if 'page' not in request_data:
+            page = 1
+        else:
+            page = request_data.get('page')
+        if 'pagesize' not in request_data:
+            pagesize = 10
+        else:
+            pagesize = request_data.get('pagesize')
+        kwargs = {}
+        if 'projectCode' not in request_data or request_data.get('projectCode') == "":
+            pass
+        else:
+            kwargs['projectCode__icontains'] =request_data.get("projectCode")
+        if 'testcasesetName' not in request_data or request_data.get('testcasesetName') == "":
+            pass
+        else:
+            kwargs['testcasesetName__icontains'] = request_data.get('testcasesetName')
 
+        testcasesets = TestCaseSet.objects.filter(**kwargs).order_by('-id')
+        total = testcasesets.count()
+        contacts = Paginator(testcasesets, pagesize)
+        try:
+            testcasesetlist = contacts.page(page)
+        except PageNotAnInteger:
+            testcasesetlist = contacts.page(1)
+        except EmptyPage:
+            testcasesetlist = contacts.page(contacts.num_pages)
+        except:
+            testcasesetlist = contacts.page(1)
+        # 序列化项目信息
+        data = TestCaseSetSerializer(instance=testcasesetlist.object_list, many=True)
+        response['data'] = data.data
+        response['msg'] = 'success'
+        response['code'] = '9999'
+        response['total'] = total
+        return JsonResponse(response)
 
 
 

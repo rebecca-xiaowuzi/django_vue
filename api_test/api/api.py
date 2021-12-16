@@ -91,9 +91,15 @@ class AddApi(View):
 class RunApi(View):
       "接口调用调试"
       def post(self,request):
-          request_data = JSONParser().parse(request)
-          jsonresponse = runApiTemplate(request_data)
-          return JsonResponse(jsonresponse)
+          response={}
+          try:
+              request_data = JSONParser().parse(request)
+              jsonresponse = runApiTemplate(request_data)
+              return JsonResponse(jsonresponse)
+          except Exception as e:
+              response['msg'] = str(e)
+              response['code'] = "9901"
+              return JsonResponse(response)
 
 
 """
@@ -112,73 +118,67 @@ def runApiTemplate(request_data):
     projectcode = request_data.get('projectCode')
     environmentName = request_data.get('environmentName')
     "找到模板进行参数替换"
-    try:
-        api = ApiInfo.objects.get(Q(apiCode=apicode),Q(projectCode=projectcode))
-        "检查在执行前是否要增加参数,要增加,添加到transferdata"
-        if  'requesttransfer' in request_data:
-            for k, v in ast.literal_eval(request_data.get('requesttransfer')).items():
-                transferdata.update({k: v})
-        apiAddress = api.apiAddress
-        tempTemplate = Template(apiAddress)
-        "替换后的apiaddress"
-        apiAddress = tempTemplate.safe_substitute(transferdata)
+    api = ApiInfo.objects.get(Q(apiCode=apicode),Q(projectCode=projectcode))
+    "检查在执行前是否要增加参数,要增加,添加到transferdata"
+    if  'requesttransfer' in request_data:
+        for k, v in request_data.get('requesttransfer').items():
+            transferdata.update({k: v})
+    apiAddress = api.apiAddress
+    tempTemplate = Template(apiAddress)
+    "替换后的apiaddress"
+    apiAddress = tempTemplate.safe_substitute(transferdata)
 
-        "requestType"
-        requestType = api.requestType
-        apiHeads = ApiHead.objects.filter(apiCode=api.apiCode).filter(projectCode=projectcode)
-        if apiHeads.exists():
-            apiheads = apiHeads
-        else:
-            "使用这个项目下的默认头信息模板"
-            apiheads = ApiHead.objects.filter(apiCode='default').filter(projectCode=projectcode)
+    "requestType"
+    requestType = api.requestType
+    apiHeads = ApiHead.objects.filter(apiCode=api.apiCode).filter(projectCode=projectcode)
+    if apiHeads.exists():
+        apiheads = apiHeads
+    else:
+        "使用这个项目下的默认头信息模板"
+        apiheads = ApiHead.objects.filter(apiCode='default').filter(projectCode=projectcode)
+    "模板中的参数进行替换"
+    apiHead = {}
+    "获取到替换后的head"
+    for apihead in apiheads:
+        tempTemplate = Template(apihead.value)
+        apiHead.update({apihead.name: tempTemplate.safe_substitute(transferdata)})
+    apiRequestParams = ApiRequestParam.objects.filter(apiCode=api.apiCode).filter(
+        projectCode=projectcode)
+    "是否有参数"
+    if apiRequestParams.exists():
+        apirequestparamD = {}
         "模板中的参数进行替换"
-        apiHead = {}
-        "获取到替换后的head"
-        for apihead in apiheads:
-            tempTemplate = Template(apihead.value)
-            apiHead.update({apihead.name: tempTemplate.safe_substitute(transferdata)})
-        apiRequestParams = ApiRequestParam.objects.filter(apiCode=api.apiCode).filter(
-            projectCode=projectcode)
-        "是否有参数"
-        if apiRequestParams.exists():
-            apirequestparamD = {}
-            "模板中的参数进行替换"
-            for apirequestparam in apiRequestParams:
-                tempTemplate = Template(apirequestparam.value)
-                apirequestparamD = ast.literal_eval(tempTemplate.safe_substitute(transferdata))
-            "执行函数"
-            request_executeapi = {'requestType': requestType, 'apiHead': apiHead,
-                                  'projectCode': projectcode, 'environmentName': environmentName,
-                                  'apiAddress': apiAddress, 'ApiRequestParam': apirequestparamD}
-        else:
-            request_executeapi = {'requestType': requestType, 'apiHead': apiHead,
-                                  'projectCode': projectcode,
-                                  'environmentName': environmentName, 'apiAddress': apiAddress}
-        "函数执行完毕后提取结果"
-        jsonresponse = runapi(request_executeapi)
-        if jsonresponse.status_code==200:
-           result = jsonresponse.json()
-           response['response'] = jsonresponse.json()
-           if jsonresponse.request.body:
-             response['request_params'] = str(jsonresponse.request.body, jsonresponse.encoding)
-        "如果有值需要处理,都增加到transferdata字典中"
-        if 'responsetransfer' in request_data:
-            "字符串转为字典"
-
-            for k, v in ast.literal_eval(request_data.get('responsetransfer')).items():
-                transferdata.update({k: jmespath.search(v, result)})
-        response['transferdata'] = transferdata
-        response['request_url'] = jsonresponse.url
-        response['request_method'] = jsonresponse.request.method
-        response['request_heads'] = jsonresponse.request.headers.__dict__
-        response['status_code']=jsonresponse.status_code
-        response['msg'] = "请求成功"
-        response['code'] = "9999"
-        return response
-    except Exception as e:
-        response['msg'] = str(e)
-        response['code'] = "9900"
-        return response
+        for apirequestparam in apiRequestParams:
+            tempTemplate = Template(apirequestparam.value)
+            apirequestparamD = ast.literal_eval(tempTemplate.safe_substitute(transferdata))
+        "执行函数"
+        request_executeapi = {'requestType': requestType, 'apiHead': apiHead,
+                              'projectCode': projectcode, 'environmentName': environmentName,
+                              'apiAddress': apiAddress, 'ApiRequestParam': apirequestparamD}
+    else:
+        request_executeapi = {'requestType': requestType, 'apiHead': apiHead,
+                              'projectCode': projectcode,
+                              'environmentName': environmentName, 'apiAddress': apiAddress}
+    "函数执行完毕后提取结果"
+    jsonresponse = runapi(request_executeapi)
+    if jsonresponse.status_code==200:
+       result = jsonresponse.json()
+       response['response'] = jsonresponse.json()
+       if jsonresponse.request.body:
+         response['request_params'] = str(jsonresponse.request.body, jsonresponse.encoding)
+    "如果有值需要处理,都增加到transferdata字典中"
+    if 'responsetransfer' in request_data:
+        "字符串转为字典"
+        for k, v in request_data.get('responsetransfer').items():
+            transferdata.update({k: jmespath.search(v, result)})
+    response['transferdata'] = transferdata
+    response['request_url'] = jsonresponse.url
+    response['request_method'] = jsonresponse.request.method
+    response['request_heads'] = jsonresponse.request.headers.__dict__
+    response['status_code']=jsonresponse.status_code
+    response['msg'] = "请求成功"
+    response['code'] = "9999"
+    return response
 
 
 
@@ -190,21 +190,23 @@ def runapi(request_data):
     projectCode = request_data['projectCode']
     environmentName = request_data['environmentName']
     apiAddress = request_data['apiAddress']
+
     url = (Environment.objects.filter(projectCode=projectCode).filter(environmentName=environmentName))
-    if method == 'POST':
+    if url.exists():
+        if method == 'POST':
 
-        data = request_data['ApiRequestParam']
-        r = requests.request("POST", url[0].ip + apiAddress, json=data, headers=head)
-        return r
-    if method == 'GET':
-        if 'ApiRequestParam'  in request_data:
-            param = request_data['ApiRequestParam']
-            r = requests.request("GET", url[0].ip + apiAddress, param=param, headers=head)
+            data = request_data['ApiRequestParam']
+            r = requests.request("POST", url[0].ip + apiAddress, json=data, headers=head)
             return r
-        else:
+        if method == 'GET':
+            if 'ApiRequestParam'  in request_data:
+                param = request_data['ApiRequestParam']
+                r = requests.request("GET", url[0].ip + apiAddress, param=param, headers=head)
+                return r
+            else:
 
-            r = requests.request("GET", url[0].ip + apiAddress, headers=head)
-            return r
+                r = requests.request("GET", url[0].ip + apiAddress, headers=head)
+                return r
 
 
 class apilist(View):

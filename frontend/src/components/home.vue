@@ -68,8 +68,8 @@
                             <el-menu-item index="/testcaselist" :route="{name:'testcaselist'}">
                                 用例列表
                             </el-menu-item>
-                          <el-menu-item index="/variablelist" :route="{name:'variablelist'}">
-                                变量信息
+                          <el-menu-item index="/testcasesetlist" :route="{name:'testcasesetlist'}">
+                                用例集列表
                             </el-menu-item>
                         </el-submenu>
 

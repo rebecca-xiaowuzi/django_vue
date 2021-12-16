@@ -7,7 +7,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse, HttpRequest
 from django.views import View
-from api_test.serializers import TestCaseSerializer,TestCaseDetailSerializer,TestCaseDetailDesSerializer
+from api_test.serializers import TestCaseSerializer,TestCaseDetailSerializer,TestCaseDetailDesSerializer,updateTestCaseSerializer
 from rest_framework.parsers import JSONParser
 from api_test.api.login import GetUserFromHeader
 from  api_test.models import TestCase,TestCaseDetail,ApiInfo,ApiHead,Funcation,SqlConnect,Sql,Environment,Variable,ApiRequestParam
@@ -25,7 +25,6 @@ class  AddTestCase(View):
               response = {}
               request_data = JSONParser().parse(request)
               request_data['create_user'] = create_user
-              print(request_data)
               try:
                 testcase_serializer = TestCaseSerializer(data=request_data)
                 """放在同一个事物中"""
@@ -64,7 +63,78 @@ class  AddTestCase(View):
                      return JsonResponse(response)
 
 
+"""修改测试用例模块"""
+class  UpdateTestCase(View):
+        def param_check(self, request_data):
+            response = {}
+            try:
+                if not request_data["testcaseCode"] or not request_data["projectCode"]:
+                    response['msg'] = '参数有误'
+                    response['code'] = '9966'
+                    return JsonResponse(response)
 
+            except KeyError:
+                response['msg'] = '参数有误'
+                response['code'] = '9966'
+                return JsonResponse(response)
+
+        def post(self, request):
+            request_data = JSONParser().parse(request)
+            result = self.param_check(request_data=request_data)
+            if result:
+                return result
+            response = {}
+            testcaseCode = request_data.get('testcaseCode')
+            projectCode = request_data.get('projectCode')
+            create_user = GetUserFromHeader(request).getuser()
+            request_data['create_user'] = create_user
+
+            try:
+                testcaseinfo = TestCase.objects.get(Q(projectCode=projectCode), Q(testcaseCode=testcaseCode))
+                testcase_serializer = updateTestCaseSerializer(instance=testcaseinfo,data=request_data,many=False)
+                """放在同一个事物中"""
+                with transaction.atomic():
+                     save_tage = transaction.savepoint()
+                     if testcase_serializer.is_valid():
+                         print(request_data.get('testcaseCode'))
+                         testcase_serializer.save()
+
+                     else:
+                         transaction.savepoint_rollback(save_tage)
+                         response['code'] = "9902"
+                         response['msg'] = testcase_serializer.errors
+                         return JsonResponse(response)
+
+                     testcasedetailinfo = TestCaseDetail.objects.filter(testcaseCode=testcaseCode)
+
+                     # 检查数据库中该用例是否有旧的参数，有的话，删除
+                     if testcasedetailinfo.count() != 0:
+                         testcasedetailinfo.delete()
+                     if 'TestCaseDetail' not in request_data or request_data.get('TestCaseDetail') == "":
+                         response['testcaseName'] = testcase_serializer.data.get('testcaseName')
+                         response['code'] = '9999'
+                         response['msg'] = 'success'
+                         return JsonResponse(response)
+                     else:
+                         for testCaseDetails in request_data.get('TestCaseDetail'):
+                             testCaseDetails['testcaseCode'] = request_data['testcaseCode']
+                             testcasedetail_serializer = TestCaseDetailSerializer(data=testCaseDetails)
+                             print(testcasedetail_serializer)
+                             if testcasedetail_serializer.is_valid():
+                                 testcasedetail_serializer.save()
+                             else:
+                                 transaction.savepoint_rollback(save_tage)
+                                 response['msg'] = testcasedetail_serializer.errors
+                                 response['code'] = '9902'
+                                 return JsonResponse(response)
+                         response['testcaseName'] = testcase_serializer.data.get('testcaseName')
+                         response['code'] = '9999'
+                         response['msg'] = 'success'
+                         return JsonResponse(response)
+            except Exception as e:
+                     response['msg'] = str(e)
+                     response['code'] = "9900"
+                     return JsonResponse(response)
 
 
 class RunTestCase(View):
@@ -91,6 +161,7 @@ def runtestcase(request_data):
     environmentName = request_data.get('environmentName')
     "先获取下该项目环境下的全局变量"
     variables = Variable.objects.filter(projectCode=projectcode).filter(environmentName=environmentName)
+
     "queryset是否有数据，有数据，更新到transferdata"
     if variables.exists():
         for variavle in variables:
@@ -98,7 +169,6 @@ def runtestcase(request_data):
     try:
         # 直接获取表单的用例详情数据，支持未添加用例的情况下的用例执行
         if 'TestCaseDetail' in request_data:
-
             testcasedetails = request_data.get('TestCaseDetail')
         else:
             "根据用例找到用例详情,根据order排序"
@@ -125,7 +195,7 @@ def runtestcase(request_data):
                     return JsonResponse(response)
                 if testcasedetail.requesttransfer and testcasedetail.requesttransfer!=' ':
                     requesttransfer=testcasedetail.requesttransfer
-                    runsql_params['requesttransfer'] = requesttransfer
+                    runsql_params['requesttransfer'] = ast.literal_eval(requesttransfer)
                 if testcasedetail.responsetransfer and testcasedetail.responsetransfer!=' ':
                     responsetransfer=testcasedetail.responsetransfer
                     runsql_params['responsetransfer'] = responsetransfer
@@ -142,7 +212,7 @@ def runtestcase(request_data):
                 runfuncation_params['transferdata'] = transferdata
                 if testcasedetail.requesttransfer and testcasedetail.requesttransfer!=' ':
                     requesttransfer=testcasedetail.requesttransfer
-                    runfuncation_params['requesttransfer'] = requesttransfer
+                    runfuncation_params['requesttransfer'] = ast.literal_eval(requesttransfer)
                 if testcasedetail.responsetransfer and testcasedetail.responsetransfer!=' ':
                     responsetransfer=testcasedetail.responsetransfer
                     runfuncation_params['responsetransfer'] = responsetransfer
@@ -160,12 +230,14 @@ def runtestcase(request_data):
                 runapi_params['environmentName'] = environmentName
                 if testcasedetail.requesttransfer and testcasedetail.requesttransfer!=' ':
                     requesttransfer=testcasedetail.requesttransfer
-                    runapi_params['requesttransfer'] = requesttransfer
+                    runapi_params['requesttransfer'] = ast.literal_eval(requesttransfer)
                 if testcasedetail.responsetransfer and testcasedetail.responsetransfer!=' ':
 
                     responsetransfer=testcasedetail.responsetransfer
-                    runapi_params['responsetransfer'] = responsetransfer
+                    runapi_params['responsetransfer'] = ast.literal_eval(responsetransfer)
+
                 api_response=runApiTemplate(runapi_params)
+
                 if api_response.get('code')=='9999':
                     # 将transferdata更新
                     transferdata.update(api_response.get('transferdata'))
@@ -185,14 +257,7 @@ class testcaselist(View):
     def post(self, request):
         response = {}
         request_data = JSONParser().parse(request)
-        if 'page' not in request_data:
-            page = 1
-        else:
-            page = request_data.get('page')
-        if 'pagesize' not in request_data:
-            pagesize = 10
-        else:
-            pagesize = request_data.get('pagesize')
+
         kwargs = {}
         if 'projectCode' not in request_data or request_data.get('projectCode') == "":
             pass
@@ -205,6 +270,18 @@ class testcaselist(View):
 
         testcases = TestCase.objects.filter(**kwargs).order_by('-id')
         total = testcases.count()
+        # 不传page和pagesize，不分页
+        if 'page' not in request_data:
+            page = 1
+        else:
+            page = request_data.get('page')
+        if 'pagesize' not in request_data:
+            if total!=0:
+              pagesize = total
+            else:
+                pagesize=1
+        else:
+            pagesize = request_data.get('pagesize')
         contacts = Paginator(testcases, pagesize)
         try:
             testcaselist = contacts.page(page)

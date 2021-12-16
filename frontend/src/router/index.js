@@ -26,6 +26,8 @@ import childapi from '../components/childapi'
 import sqllist from '../components/sqllist'
 import addsql from '../components/addsql'
 import updatetestcase from '../components/updatetestcase'
+import testcasesetlist from '../components/testcasesetlist'
+import addtestcaseset from '../components/addtestcaseset'
 Vue.use(Router)
 
 export default new Router({
@@ -90,6 +92,11 @@ export default new Router({
           component: testcaselist
         },
         {
+          path: '/testcasesetlist',
+          name: 'testcasesetlist',
+          component: testcasesetlist
+        },
+        {
           path: '/apilist',
           name: 'apilist',
           component: apilist
@@ -143,6 +150,10 @@ export default new Router({
         {
           path: '/updatetestcase',
           component: updatetestcase
+        },
+        {
+          path: '/addtestcaseset',
+          component: addtestcaseset
         }
       ]}
 

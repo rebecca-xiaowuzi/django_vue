@@ -142,6 +142,7 @@ export default {
           testcasedetail_sql['testcaseDetailOrder'] = i
           testcasedetail_sql['testcaseDetailCode'] = this.$refs.childsql[0].sql.sqlCode
           testcasedetail_sql['testcaseDetailName'] = this.$refs.childsql[0].sql.sqlname
+          testcasedetail_sql['responsetransfer'] = this.$refs.childsql[0].sql.responsetransfer
           // 处理requesttransfer数据格式--从数组转为字典
           var requesttransfer_sql = {}
           if ((this.$refs.childsql[0].sql.requesttransfer.length === 1) & (this.$refs.childsql[0].sql.requesttransfer[0].name === '') & (this.$refs.childsql[0].sql.requesttransfer[0].value === '')) {
@@ -152,15 +153,6 @@ export default {
             testcasedetail_sql['requesttransfer'] = JSON.stringify(requesttransfer_sql)
           }
 
-          // 处理responsetransfer数据格式--从数组转为字典
-          var responsetransfer_sql = {}
-          if ((this.$refs.childsql[0].sql.responsetransfer.length === 1) & (this.$refs.childsql[0].sql.responsetransfer[0].name === '') & (this.$refs.childsql[0].sql.responsetransfer[0].value === '')) {
-          } else {
-            for (var b = 0; b < this.$refs.childsql[0].sql.responsetransfer.length; b++) {
-              responsetransfer_sql[this.$refs.childsql[0].sql.responsetransfer[b]['name']] = this.$refs.childsql[0].sql.responsetransfer[b]['value']
-            }
-            testcasedetail_sql['responsetransfer'] = JSON.stringify(responsetransfer_sql)
-          }
 
           TestCaseDetail.push(testcasedetail_sql)
         } else if (this.list2[i].type === 'childfuncation') {

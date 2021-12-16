@@ -39,6 +39,7 @@
     </div>
 <el-button type="primary" @click="updatetestcase">更新用例</el-button>
     <el-button @click="cancel">取消</el-button>
+
           </el-form>
     <div class="col-5">
       <h3>可用组件列表</h3>
@@ -87,6 +88,7 @@ export default {
   },
 
   methods: {
+
         // 获取详情展示
     gettestcasedetail () {
       this.$http.post('TestCase/GetTestcaseDetail', {projectCode: this.$route.query.projectCode, testcaseCode: this.$route.query.testcaseCode}).then(response => {
@@ -100,7 +102,7 @@ export default {
               //处理所有的接口返回的数据，显示在页面中
               this.api.apiCode=response.data.data.TestCaseDetail[i].testcaseDetailCode
               this.api.apiname=response.data.data.TestCaseDetail[i].testcaseDetailName
-              if (response.data.data.TestCaseDetail[i].requesttransfer!=' '){
+              if (response.data.data.TestCaseDetail[i].requesttransfer!==''){
                 var list_requesttransfer=[]
                 var json_requesttransfer_api=JSON.parse(response.data.data.TestCaseDetail[i].requesttransfer)
                 for (var requesttransfer_api in json_requesttransfer_api) {
@@ -108,7 +110,8 @@ export default {
               }
               this.api.requesttransfer=list_requesttransfer
               }
-              if (response.data.data.TestCaseDetail[i].responsetransfer!=' '){
+              if (response.data.data.TestCaseDetail[i].responsetransfer!==''){
+
                 var list_responsetransfer=[]
                 var json_responsetransfer_api=JSON.parse(response.data.data.TestCaseDetail[i].responsetransfer)
                 for (var responsetransfer_api in json_responsetransfer_api) {
@@ -122,7 +125,8 @@ export default {
             else if (response.data.data.TestCaseDetail[i].type==='SQL') {
               this.sql.sqlCode=response.data.data.TestCaseDetail[i].testcaseDetailCode
               this.sql.sqlname=response.data.data.TestCaseDetail[i].testcaseDetailName
-              if (response.data.data.TestCaseDetail[i].requesttransfer!=' '){
+              this.sql.responsetransfer=response.data.data.TestCaseDetail[i].responsetransfer
+              if (response.data.data.TestCaseDetail[i].requesttransfer!==''){
                 var list_requesttransfer_sql=[]
                 var json_requesttransfer_sql=JSON.parse(response.data.data.TestCaseDetail[i].requesttransfer)
                 for (var requesttransfer_sql in json_requesttransfer_sql) {
@@ -130,21 +134,13 @@ export default {
               }
               this.sql.requesttransfer=list_requesttransfer_sql
               }
-              if (response.data.data.TestCaseDetail[i].responsetransfer!=' '){
-                var list_responsetransfer_sql=[]
-                var json_responsetransfer_sql=JSON.parse(response.data.data.TestCaseDetail[i].responsetransfer)
-                for (var responsetransfer_sql in json_responsetransfer_sql) {
-                list_responsetransfer_sql.push({name: responsetransfer_sql, value: json_responsetransfer_sql[responsetransfer_sql]})
-              }
-              this.sql.responsetransfer=list_responsetransfer_sql
-              }
               this.list2.push({name: "sql", type: "childsql"})
             }
             else if (response.data.data.TestCaseDetail[i].type==='FUNCATION'){
               this.funcation.funcationname=response.data.data.TestCaseDetail[i].testcaseDetailName
               this.funcation.funcation=response.data.data.TestCaseDetail[i].testcaseDetailCode
               this.funcation.responsetransfer=response.data.data.TestCaseDetail[i].responsetransfer
-              if (response.data.data.TestCaseDetail[i].requesttransfer!=' '){
+              if (response.data.data.TestCaseDetail[i].requesttransfer!==''){
                 var list_requesttransfer_f=[]
                 var json_requesttransfer_f=JSON.parse(response.data.data.TestCaseDetail[i].requesttransfer)
                 for (var requesttransfer_f in json_requesttransfer_f) {
@@ -199,6 +195,7 @@ export default {
           testcasedetail_sql['testcaseDetailOrder'] = i
           testcasedetail_sql['testcaseDetailCode'] = this.$refs.childsql[0].sql.sqlCode
           testcasedetail_sql['testcaseDetailName'] = this.$refs.childsql[0].sql.sqlname
+           testcasedetail_sql['responsetransfer'] = this.$refs.childsql[0].sql.responsetransfer
           // 处理requesttransfer数据格式--从数组转为字典
           var requesttransfer_sql = {}
           if ((this.$refs.childsql[0].sql.requesttransfer.length === 1) & (this.$refs.childsql[0].sql.requesttransfer[0].name === '') & (this.$refs.childsql[0].sql.requesttransfer[0].value === '')) {
@@ -207,16 +204,6 @@ export default {
               requesttransfer_sql[this.$refs.childsql[0].sql.requesttransfer[a]['name']] = this.$refs.childsql[0].sql.requesttransfer[a]['value']
             }
             testcasedetail_sql['requesttransfer'] = JSON.stringify(requesttransfer_sql)
-          }
-
-          // 处理responsetransfer数据格式--从数组转为字典
-          var responsetransfer_sql = {}
-          if ((this.$refs.childsql[0].sql.responsetransfer.length === 1) & (this.$refs.childsql[0].sql.responsetransfer[0].name === '') & (this.$refs.childsql[0].sql.responsetransfer[0].value === '')) {
-          } else {
-            for (var b = 0; b < this.$refs.childsql[0].sql.responsetransfer.length; b++) {
-              responsetransfer_sql[this.$refs.childsql[0].sql.responsetransfer[b]['name']] = this.$refs.childsql[0].sql.responsetransfer[b]['value']
-            }
-            testcasedetail_sql['responsetransfer'] = JSON.stringify(responsetransfer_sql)
           }
 
           TestCaseDetail.push(testcasedetail_sql)
@@ -248,7 +235,7 @@ export default {
         TestCaseDetail
       }
 
-      this.$http.post('TestCase/AddTestCase', testcase).then(response => {
+      this.$http.post('TestCase/UpdateTestCase', testcase).then(response => {
         if (response.data.code !== '9999') {
           return this.$message.error({message: response.data.msg, center: true})
         } else {

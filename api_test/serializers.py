@@ -163,6 +163,24 @@ class TestCaseSerializer(serializers.ModelSerializer):
         else:
             raise serializers.ValidationError("该项目不存在")
 
+
+class updateTestCaseSerializer(serializers.ModelSerializer):
+    """修改用例信息序列化"""
+
+    class Meta:
+        model=TestCase
+        fields ='__all__'
+
+    def validate(self, attrs):
+        if Project.objects.filter(projectCode=attrs['projectCode']).count() == 1:
+            if TestCase.objects.filter(projectCode=attrs['projectCode']).filter(testcaseCode=attrs['testcaseCode']).count() == 1:
+                return attrs
+            else:
+                raise serializers.ValidationError("该项目下该用例不存在")
+        else:
+            raise serializers.ValidationError("该项目不存在")
+
+
 class TestCaseDetailDesSerializer(serializers.ModelSerializer):
     """用例详情信息序列化"""
     class Meta:

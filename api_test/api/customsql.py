@@ -207,7 +207,10 @@ class getsqllist(View):
         else:
             page = request_data.get('page')
         if 'pagesize' not in request_data:
-            pagesize = total
+            if total != 0:
+                pagesize = total
+            else:
+                pagesize = 1
         else:
             pagesize = request_data.get('pagesize')
         contacts = Paginator(sql, pagesize)
@@ -232,8 +235,15 @@ class getsqllist(View):
 class ExcuteSql(View):
        "运行sql"
        def post(self, request):
+           response = {}
+           try:
               request_data = JSONParser().parse(request)
               return JsonResponse(runSqlTemplate(request_data))
+           except Exception as e:
+              response['msg'] = str(e)
+              response['code'] = "9901"
+              return JsonResponse(response)
+
 
 
 """
@@ -263,34 +273,28 @@ def runSqlTemplate(request_data):
 
     "检查在执行前是否要增加参数,要增加, 添加到transferdata"
     if 'requesttransfer' in request_data:
-        for k, v in ast.literal_eval(request_data.get('requesttransfer')).items():
+        for k, v in request_data.get('requesttransfer').items():
             transferdata.update({k: v})
     "直接找到函数,进行参数替换"
     tempTemplate = Template(sqlold)
     sql = tempTemplate.substitute(transferdata)
     request_executesql = {'sql': sql, 'sqlCode': sqlCode, 'sqlconnectCode': sqlconnectCode}
-    try:
-        result = excutesql(request_executesql)
-        "如果有值需要处理,都增加到transferdata字典中"
-        if 'responsetransfer' in request_data:
-            transferdata.update({request_data.get('responsetransfer'): result})
-        response['result'] = result
-        response['transferdata'] = transferdata
-        response['code'] = '9999'
-        response['msg'] = 'success'
-        return response
-    except Exception as e:
-        response['code'] = '9900'
-        response['msg'] = str(e)
-        return response
+    result = excutesql(request_executesql)
+    "如果有值需要处理,都增加到transferdata字典中"
+    if 'responsetransfer' in request_data:
+        transferdata.update({request_data.get('responsetransfer'): result})
+    response['result'] = result
+    response['transferdata'] = transferdata
+    response['code'] = '9999'
+    response['msg'] = 'success'
+    return response
 
 
 
 
 """返回sql执行的结果"""
 def excutesql(request_data):
-       response={}
-       try:
+              response={}
               sqlconnectCode = request_data.get('sqlconnectCode')
               c = SqlConnect.objects.get(sqlconnectCode=sqlconnectCode)
               host = c.host
@@ -305,10 +309,6 @@ def excutesql(request_data):
               cursor.close()
               connect.close()
               return data
-       except Exception as e:
-              response['code'] = '9900'
-              response['msg'] = str(e)
-              return response
 
 
 

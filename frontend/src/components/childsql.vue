@@ -62,29 +62,8 @@
 <el-form-item label="sql执行结果">
    <el-input  type="textarea" autosize disabled v-model="sql.result"></el-input>
   </el-form-item>
-       <el-form-item label="后置需转换的数据">
-         <el-table :data="sql.responsetransfer">
-<el-table-column prop="name" label="key" min-width="40%" sortable>
-                                <template slot-scope="scope">
-                                    <el-input v-model="scope.row.name" :value="scope.row.name" placeholder="请输入key"></el-input>
-                                </template>
-                            </el-table-column>
-<el-table-column  prop="value" label="内容" min-width="40%" sortable>
-                                <template slot-scope="scope">
-                                    <el-input v-model="scope.row.value" :value="scope.row.value" placeholder="请输入内容"></el-input>
-                                </template>
-                            </el-table-column>
-           <el-table-column label="操作" min-width="10%">
-                                <template slot-scope="scope">
-                                    <i class="el-icon-delete" style="font-size:30px;cursor:pointer;" @click="delresponsetransfer(scope.$index)"></i>
-                                </template>
-                            </el-table-column>
-                            <el-table-column label="" min-width="10%">
-                                <template slot-scope="scope">
-                                    <el-button v-if="scope.$index===(sql.responsetransfer.length-1)" size="mini" class="el-icon-plus" @click="addresponsetransfer"></el-button>
-                                </template>
-                            </el-table-column>
-         </el-table>
+       <el-form-item label="转换参数名称">
+   <el-input  v-model="sql.responsetransfer"></el-input>
   </el-form-item>
     </el-form>
 
@@ -97,17 +76,22 @@ export default {
     return {
       sql: {
         sqlCode: '',
-        responsetransfer: [{name: '', value: ''}],
+        responsetransfer: '',
         requesttransfer: [{name: '', value: ''}],
         result: '',
         environmentName: '',
         sqlconnectCode: '',
         sqlname: ''
       },
-      sqllist: this.getsqllist(),
+      sqllist: [],
       sqlconnectlist: [],
-      environmentlist: this.getenvironmentList(),
+      environmentlist: []
     }
+  },
+  created(){
+    this.getsqllist(),
+      this.getenvironmentList()
+
   },
   methods: {
     getsqldefault(){if (this.sql_default){
@@ -143,6 +127,7 @@ export default {
           this.sqllist = response.data.data
           this.sql.sqlCode = response.data.data[0].sqlCode
           this.getsqldefault()
+
         }
       })
     },
@@ -172,16 +157,6 @@ export default {
           } else { this.environmentName = '' }
         }
       })
-    },
-    addresponsetransfer () {
-      let responsetransfer = {name: '', value: ''}
-      this.sql.responsetransfer.push(responsetransfer)
-    },
-    delresponsetransfer (index) {
-      this.sql.responsetransfer.splice(index, 1)
-      if (this.sql.responsetransfer.length === 0) {
-        this.sql.responsetransfer.push({name: '', value: ''})
-      }
     },
     addrequesttransfer () {
       let requesttransfer = {name: '', value: ''}

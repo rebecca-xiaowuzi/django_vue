@@ -1,8 +1,8 @@
 <template>
   <div>
-  <el-form :inline="true" :model="searchtestcase" class="demo-form-inline">
+  <el-form :inline="true" :model="searchtestcaseset" class="demo-form-inline">
     <el-form-item label="项目编号">
-    <el-select v-model="searchtestcase.projectCode"  placeholder="项目编号">
+    <el-select v-model="searchtestcaseset.projectCode"  placeholder="项目编号">
        <el-option
       v-for="item in projectlist"
       :key="item.projectCode"
@@ -11,14 +11,14 @@
     </el-option>
     </el-select>
   </el-form-item>
-     <el-form-item label="用例名称">
-    <el-input v-model="searchtestcase.testcaseName" placeholder="用例名称"></el-input>
+     <el-form-item label="用例集名称">
+    <el-input v-model="searchtestcaseset.testcasesetName" placeholder="用例集名称"></el-input>
   </el-form-item>
   <el-form-item>
-    <el-button type="primary" @click="searchTestcase">查询</el-button>
+    <el-button type="primary" @click="searchTestcaseSet">查询</el-button>
   </el-form-item>
     <el-form-item>
-    <el-button type="primary" @click="addTestcase">新增用例</el-button>
+    <el-button type="primary" @click="addTestcaseSet">新增用例集</el-button>
   </el-form-item>
 </el-form>
   <div>
@@ -31,16 +31,16 @@
       label="项目编号">
     </el-table-column>
     <el-table-column
-      prop="testcaseName"
-      label="用例名称">
+      prop="testcasesetName"
+      label="用例集名称">
     </el-table-column>
     <el-table-column
-      prop="testcaseCode"
-      label="用例Code">
+      prop="testcasesetCode"
+      label="用例集Code">
     </el-table-column>
     <el-table-column
-      prop="testcaseModel"
-      label="用例所属模块">
+      prop="testcaselist"
+      label="用例列表">
     </el-table-column>
     <el-table-column
       prop="create_time"
@@ -50,11 +50,12 @@
       fixed="right"
       label="操作">
       <template slot-scope="scope">
-        <el-button type="text" size="small"  @click="updatetestcase(scope.row)">编辑</el-button>
-       <el-dropdown trigger="click" @command="runtestcase">
+<!--        <el-button type="text" size="small"  @click="updatetestcaseset(scope.row)">编辑</el-button>-->
+
+ <el-dropdown trigger="click" @command="runtestcaseset">
    <el-button type="primary"  @click ="getenvironmentList(scope.row)">运行</el-button>
   <el-dropdown-menu slot="dropdown">
-    <el-dropdown-item v-for="enitem in environmentlist" :command="beforeHandleCommand(scope.row,enitem.environmentName)" v-text="enitem.environmentName"></el-dropdown-item>
+    <el-dropdown-item v-for="item in environmentlist" :command="beforeHandleCommand(scope.row,item.environmentName)" v-text="item.environmentName"></el-dropdown-item>
   </el-dropdown-menu>
 </el-dropdown>
       </template>
@@ -76,9 +77,9 @@
 export default {
   data () {
     return {
-      searchtestcase: {
+      searchtestcaseset: {
         projectCode: '',
-        testcaseName: ''
+        testcasesetName: ''
       },
       projectlist: this.projectList(),
       tableData: [],
@@ -86,10 +87,18 @@ export default {
       pagesize: 10,
       total: 0,
       environmentlist:[]
+
+
     }
   },
+  created(){
+      this.searchTestcaseSet()
+    },
   methods: {
-     getenvironmentList (row) {
+    beforeHandleCommand(row,command){
+      return {row,command}
+    },
+    getenvironmentList (row) {
       var projectcode = row.projectCode
       this.$http.get(`Environment/getEnvironmentbyprojectcode?projectCode=${projectcode}`).then(response => {
         if (response.data.code !== '9999') {
@@ -100,16 +109,13 @@ export default {
         }
       })
     },
-    beforeHandleCommand(row,command){
-      return {row,command}
-    },
-    runtestcase(command){
-      this.$http.post('TestCase/runTestCase', {projectCode:command.row.projectCode, testcaseCode:command.row.testcaseCode, environmentName: command.command}).then(response => {
+    runtestcaseset(command){
+      this.$http.post('TestCaseSet/RunTestCaseSet', {projectCode:command.row.projectCode, testcasesetCode:command.row.testcasesetCode, environmentName:command.command}).then(response => {
           return this.$message({message: response.data.msg, center: true})
       })
 
     },
-    updatetestcase (row) {
+    updatetestcaseset (row) {
       this.$router.push({path: '/updatetestcase', query: { projectCode: row.projectCode, testcaseCode: row.testcaseCode }})
     },
     projectList () {
@@ -119,14 +125,11 @@ export default {
         } else {
           // 获取项目下拉列表数据
           this.projectlist = response.data.data
-          // 项目下拉框设置默认值
-          this.searchtestcase.projectCode = response.data.data[0].projectCode
-          this.searchTestcase()
         }
       })
     },
-    searchTestcase () {
-      this.$http.post('TestCase/testcaselist', {projectCode: this.searchtestcase.projectCode, testcaseName: this.searchtestcase.testcaseName, page: this.page, pagesize: this.pagesize}).then(response => {
+    searchTestcaseSet () {
+      this.$http.post('TestCaseSet/testcasesetlist', {projectCode: this.searchtestcaseset.projectCode, testcasesetName: this.searchtestcaseset.testcasesetName, page: this.page, pagesize: this.pagesize}).then(response => {
         if (response.data.code !== '9999') {
           return this.$message.error({message: response.data.msg, center: true})
         } else {
@@ -138,15 +141,14 @@ export default {
     // 获取页数直接请求list接口
     handleCurrentChange (val) {
       this.page = val
-      this.searchTestcase()
+      this.searchTestcaseSet()
     },
-    addTestcase () {
-      this.$router.push('/addtestcase')
+    addTestcaseSet () {
+      this.$router.push('/addtestcaseset')
     }
   }
 }
 </script>
-
 <style scoped>
 
 </style>

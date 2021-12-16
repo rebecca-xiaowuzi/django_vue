@@ -116,7 +116,7 @@ export default {
         environmentName: '',
         apiname: ''
       },
-      apilist: this.apiList(),
+      apilist: [],
       apidetail: {
         httpType: '',
         requestType: '',
@@ -127,7 +127,7 @@ export default {
         requestParameterType: ''
       },
       drawer: false,
-      environmentlist: this.getenvironmentList(),
+      environmentlist: [],
       responsedetail: {
         requesttransfer: {},
         request_url: '',
@@ -139,6 +139,10 @@ export default {
       }
     }
   },
+  created(){
+    this.getenvironmentList(),
+      this.apiList()
+  },
   methods: {
     drawerclick () {
       this.drawer = true
@@ -146,7 +150,7 @@ export default {
      getapidefault(){
       if (this.api_default){
        this.api= JSON.parse(JSON.stringify({...this.api,...this.api_default}))
-        this.getapidetail()
+        // this.getapidetail()
       }
      },
     runApi () {
@@ -209,8 +213,8 @@ export default {
         if (response.data.code !== '9999') { return this.$message.error({message: response.data.msg, center: true}) } else {
           this.apilist = response.data.data
           this.api.apiCode = response.data.data[0].apiCode
-          this.getapidetail()
           this.getapidefault()
+          this.getapidetail()
         }
       })
 
