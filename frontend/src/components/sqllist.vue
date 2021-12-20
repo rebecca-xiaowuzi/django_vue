@@ -65,6 +65,9 @@ export default {
       pagesize: 10
     }
   },
+  created(){
+      this.searchSql()
+    },
   methods: {
     // 点击查询按钮查询变量信息
     searchSql () {

@@ -71,6 +71,9 @@
                           <el-menu-item index="/testcasesetlist" :route="{name:'testcasesetlist'}">
                                 用例集列表
                             </el-menu-item>
+                         <el-menu-item index="/resultlist" :route="{name:'resultlist'}">
+                                结果列表
+                            </el-menu-item>
                         </el-submenu>
 
                     </el-menu>

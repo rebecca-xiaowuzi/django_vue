@@ -28,6 +28,8 @@ import addsql from '../components/addsql'
 import updatetestcase from '../components/updatetestcase'
 import testcasesetlist from '../components/testcasesetlist'
 import addtestcaseset from '../components/addtestcaseset'
+import resultlist from '../components/resultlist'
+import resultdetail from '../components/resultdetail'
 Vue.use(Router)
 
 export default new Router({
@@ -154,6 +156,15 @@ export default new Router({
         {
           path: '/addtestcaseset',
           component: addtestcaseset
+        },
+        {
+          path: '/resultlist',
+          name: 'resultlist',
+          component: resultlist
+        },
+         {
+          path: '/resultdetail',
+          component: resultdetail
         }
       ]}
 

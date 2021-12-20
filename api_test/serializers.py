@@ -1,7 +1,7 @@
 from django.db.models import Q
 from rest_framework import serializers,validators
 
-from api_test.models import User,Variable,Environment,ApiHead,ApiInfo,ApiRequestParam,Project,Funcation,SqlConnect,Sql,TestCase,TestCaseDetail,TestCaseSet,Project,User2Project
+from api_test.models import User,Variable,Environment,ApiHead,ApiInfo,ApiRequestParam,Project,Funcation,SqlConnect,Sql,TestCase,TestCaseDetail,TestCaseSet,Project,User2Project,Result
 
 from django.http import request
 
@@ -261,4 +261,11 @@ class ProjectEnvironmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Environment
         fields = ['ip', 'environmentName','environmentDescription']
+
+class ResultSerializer(serializers.ModelSerializer):
+    """执行结果详情"""
+
+    class Meta:
+        model = Result
+        fields =  '__all__'
 

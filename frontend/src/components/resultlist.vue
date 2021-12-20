@@ -1,8 +1,8 @@
 <template>
   <div>
-  <el-form :inline="true" :model="searchapi" class="demo-form-inline">
+  <el-form :inline="true" :model="searchresult" class="demo-form-inline">
     <el-form-item label="项目编号">
-    <el-select v-model="searchapi.projectCode"  placeholder="项目编号">
+    <el-select v-model="searchresult.projectCode"  placeholder="项目编号">
        <el-option
       v-for="item in projectlist"
       :key="item.projectCode"
@@ -11,14 +11,14 @@
     </el-option>
     </el-select>
   </el-form-item>
-     <el-form-item label="接口名称">
-    <el-input v-model="searchapi.apiname" placeholder="接口名称"></el-input>
+     <el-form-item label="用例集编号">
+    <el-input v-model="searchresult.testcasesetCode" placeholder="用例集编号"></el-input>
+  </el-form-item>
+    <el-form-item label="用例编号">
+    <el-input v-model="searchresult.testcaseCode" placeholder="用例编号"></el-input>
   </el-form-item>
   <el-form-item>
-    <el-button type="primary" @click="searchApi">查询</el-button>
-  </el-form-item>
-    <el-form-item>
-    <el-button type="primary" @click="addApi">新增接口</el-button>
+    <el-button type="primary" @click="searchResult">查询</el-button>
   </el-form-item>
 </el-form>
   <div>
@@ -27,36 +27,25 @@
     border>
     <el-table-column
       fixed
+      prop="id"
+      label="序号">
+    </el-table-column>
+    <el-table-column
+      fixed
       prop="projectCode"
       label="项目编号">
     </el-table-column>
     <el-table-column
-      prop="apiname"
-      label="接口名称">
+      prop="testcasesetCode"
+      label="用例集编号">
     </el-table-column>
     <el-table-column
-      prop="apiCode"
-      label="接口Code">
+      prop="testcaseCode"
+      label="用例编号">
     </el-table-column>
     <el-table-column
-      prop="apiAddress"
-      label="接口地址">
-    </el-table-column>
-    <el-table-column
-      prop="httpType"
-      label="协议">
-    </el-table-column>
-    <el-table-column
-      prop="requestType"
-      label="请求方式">
-    </el-table-column>
-    <el-table-column
-      prop="description"
-      label="接口描述">
-    </el-table-column>
-    <el-table-column
-      prop="status"
-      label="接口状态">
+      prop="result"
+      label="执行结果">
     </el-table-column>
     <el-table-column
       prop="create_time"
@@ -66,7 +55,7 @@
       fixed="right"
       label="操作">
       <template slot-scope="scope">
-        <el-button type="text" size="small"  @click="updateapi(scope.row)">编辑</el-button>
+   <el-button type="primary"  @click ="getresultdetail(scope.row)">详情</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -86,23 +75,26 @@
 export default {
   data () {
     return {
-      searchapi: {
+      searchresult: {
         projectCode: '',
-        apiname: ''
+        testcasesetCode: '',
+        testcaseCode:''
       },
       projectlist: this.projectList(),
       tableData: [],
       page: 1,
       pagesize: 10,
       total: 0
+
+
     }
   },
   created(){
-      this.searchApi()
+      this.searchResult()
     },
   methods: {
-    updateapi (row) {
-      this.$router.push({path: '/updateapi', query: { projectCode: row.projectCode, apiCode: row.apiCode }})
+    getresultdetail (row) {
+      this.$router.push({path: '/resultdetail', query: { id: row.id}})
     },
     projectList () {
       this.$http.get('Project/getProjects').then(response => {
@@ -114,8 +106,8 @@ export default {
         }
       })
     },
-    searchApi () {
-      this.$http.post('api/Api/apilist', {projectCode: this.searchapi.projectCode, apiname: this.searchapi.apiname, page: this.page, pagesize: this.pagesize}).then(response => {
+    searchResult () {
+      this.$http.post('Result/ResultList', {projectCode: this.searchresult.projectCode, testcasesetCode: this.searchresult.testcasesetCode,testcaseCode: this.searchresult.testcaseCode, page: this.page, pagesize: this.pagesize}).then(response => {
         if (response.data.code !== '9999') {
           return this.$message.error({message: response.data.msg, center: true})
         } else {
@@ -127,15 +119,11 @@ export default {
     // 获取页数直接请求list接口
     handleCurrentChange (val) {
       this.page = val
-      this.searchApi()
-    },
-    addApi () {
-      this.$router.push('/addapi')
+      this.searchResult()
     }
   }
 }
 </script>
-
 <style scoped>
 
 </style>

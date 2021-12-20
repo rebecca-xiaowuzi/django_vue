@@ -1,6 +1,6 @@
 from django.conf.urls import url
 
-from .api import users, project,manageenvironmental,login,api,customfuncation,customsql,testcase,testcaseset
+from .api import users, project,manageenvironmental,login,api,customfuncation,customsql,testcase,testcaseset,result
 from api_test.api.views import *
 
 
@@ -45,4 +45,6 @@ url(r'TestCase/testcaselist', testcase.testcaselist.as_view()),
 url(r'TestCase/GetTestcaseDetail', testcase.GetTestcaseDetail.as_view()),
 url(r'TestCase/UpdateTestCase', testcase.UpdateTestCase.as_view()),
 url(r'TestCaseSet/testcasesetlist', testcaseset.testcasesetlist.as_view()),
+url(r'Result/ResultList', result.ResultList.as_view()),
+url(r'Result/GetResultDetail', result.GetResultDetail.as_view()),
 ]

@@ -211,6 +211,18 @@ class TestCaseSet(models.Model):
     create_user = models.CharField(max_length=200, null=True)
 
 
+class Result(models.Model):
+    """用例执行详情"""
+    projectCode = models.CharField(max_length=200, blank=False, verbose_name='项目code')
+    testcasesetCode = models.CharField(max_length=200, blank=True, unique=False, verbose_name='用例集合code')
+    testcaseCode = models.CharField(max_length=200, blank=True, unique=False, verbose_name='用例code,对应用例表的testcaseCode')
+    result = models.CharField(max_length=200, blank=False, verbose_name='用例或者用例集执行结果',default='PASS')
+    request = models.TextField(blank=False, verbose_name='请求信息')
+    result_detail = models.TextField(verbose_name='用例执行的返回数据')
+    create_time = models.DateTimeField(auto_now_add=True)
+    update_time = models.DateTimeField(auto_now=True)
+    create_user = models.CharField(max_length=200, null=True)
+
 
 
 

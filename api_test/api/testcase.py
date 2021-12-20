@@ -7,10 +7,10 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse, HttpRequest
 from django.views import View
-from api_test.serializers import TestCaseSerializer,TestCaseDetailSerializer,TestCaseDetailDesSerializer,updateTestCaseSerializer
+from api_test.serializers import TestCaseSerializer,TestCaseDetailSerializer,TestCaseDetailDesSerializer,updateTestCaseSerializer,ResultSerializer
 from rest_framework.parsers import JSONParser
 from api_test.api.login import GetUserFromHeader
-from  api_test.models import TestCase,TestCaseDetail,ApiInfo,ApiHead,Funcation,SqlConnect,Sql,Environment,Variable,ApiRequestParam
+from  api_test.models import TestCase,TestCaseDetail,ApiInfo,ApiHead,Funcation,SqlConnect,Sql,Environment,Variable,ApiRequestParam,Result
 from api_test.api.customfuncation import runfuncation
 from api_test.api.customsql import excutesql,runSqlTemplate
 from api_test.api.api import runapi,runApiTemplate
@@ -146,10 +146,31 @@ class RunTestCase(View):
        处理返回值并写入对象字典中
     """
     def post(self, request):
+        response = {}
+        result_data={}
+        try:
             create_user = GetUserFromHeader(request).getuser()
             request_data = JSONParser().parse(request)
             request_data['create_user'] = create_user
-            return runtestcase(request_data)
+            result=runtestcase(request_data)
+            # 将用例执行的结果写入到reslut表中
+            result_data['create_user'] = create_user
+            result_data['projectCode'] = request_data.get('projectCode')
+            result_data['testcaseCode'] = request_data.get('testcaseCode')
+            result_data['request'] = str(request_data)
+            result_data['result_detail'] =str(result)
+            Result_serializer = ResultSerializer(data=result_data)
+            if Result_serializer.is_valid():
+                    Result_serializer.save()
+            else:
+                response['code'] = "9902"
+                response['msg'] = Result_serializer.errors
+                return JsonResponse(response)
+            return JsonResponse(result)
+        except Exception as e:
+            response['msg'] = str(e)
+            response['code'] = "9901"
+            return JsonResponse(response)
 
 
 def runtestcase(request_data):
@@ -166,90 +187,84 @@ def runtestcase(request_data):
     if variables.exists():
         for variavle in variables:
             transferdata.update({variavle.variableName: variavle.variable})
-    try:
-        # 直接获取表单的用例详情数据，支持未添加用例的情况下的用例执行
-        if 'TestCaseDetail' in request_data:
-            testcasedetails = request_data.get('TestCaseDetail')
+    # 直接获取表单的用例详情数据，支持未添加用例的情况下的用例执行
+    if 'TestCaseDetail' in request_data:
+        testcasedetails = request_data.get('TestCaseDetail')
+    else:
+        "根据用例找到用例详情,根据order排序"
+        testcasedetails = TestCaseDetail.objects.filter(testcaseCode=testcaseCode).order_by('testcaseDetailOrder')
+        if testcasedetails.exists():
+            pass
         else:
-            "根据用例找到用例详情,根据order排序"
-            testcasedetails = TestCaseDetail.objects.filter(testcaseCode=testcaseCode).order_by('testcaseDetailOrder')
-            if testcasedetails.exists():
-                pass
+            response['msg'] = '用例无内容'
+            response['code'] = "9900"
+            return response
+    for testcasedetail in testcasedetails:
+        if testcasedetail.type == "SQL":
+            runsql_params={}
+            "获取到sqlcode和sqlconnectcode"
+            if Sql.objects.filter(sqlCode=testcasedetail.testcaseDetailCode).exists():
+                sql = Sql.objects.filter(sqlCode=testcasedetail.testcaseDetailCode)
+                sqlCode = sql.sqlCode
+                sqlconnectCode = SqlConnect.objects.get(Q(projectcode=projectcode),Q(environmentName=environmentName)).sqlconnectCode
+                runsql_params['sqlCode']=sqlCode
+                runsql_params['sqlconnectCode'] = sqlconnectCode
             else:
-                response['msg'] = '用例无内容'
+                response['msg'] = 'sql不存在'
                 response['code'] = "9900"
-                return JsonResponse(response)
-        for testcasedetail in testcasedetails:
-            if testcasedetail.type == "SQL":
-                runsql_params={}
-                "获取到sqlcode和sqlconnectcode"
-                if Sql.objects.filter(sqlCode=testcasedetail.testcaseDetailCode).exists():
-                    sql = Sql.objects.filter(sqlCode=testcasedetail.testcaseDetailCode)
-                    sqlCode = sql.sqlCode
-                    sqlconnectCode = SqlConnect.objects.get(Q(projectcode=projectcode),Q(environmentName=environmentName)).sqlconnectCode
-                    runsql_params['sqlCode']=sqlCode
-                    runsql_params['sqlconnectCode'] = sqlconnectCode
-                else:
-                    response['msg'] = 'sql不存在'
-                    response['code'] = "9900"
-                    return JsonResponse(response)
-                if testcasedetail.requesttransfer and testcasedetail.requesttransfer!=' ':
-                    requesttransfer=testcasedetail.requesttransfer
-                    runsql_params['requesttransfer'] = ast.literal_eval(requesttransfer)
-                if testcasedetail.responsetransfer and testcasedetail.responsetransfer!=' ':
-                    responsetransfer=testcasedetail.responsetransfer
-                    runsql_params['responsetransfer'] = responsetransfer
-                runsql_params['transferdata'] = transferdata
-                sql_response=runSqlTemplate(runsql_params)
-                if sql_response.get('code')=='9999':
-                    # 将transferdata更新
-                    transferdata.update(sql_response.get('transferdata'))
-                response[testcasedetail.testcaseDetailName] = sql_response
-            if testcasedetail.type == "FUNCATION":
-                runfuncation_params = {}
-                funcation=testcasedetail.testcaseDetailCode
-                runfuncation_params['funcation']=funcation
-                runfuncation_params['transferdata'] = transferdata
-                if testcasedetail.requesttransfer and testcasedetail.requesttransfer!=' ':
-                    requesttransfer=testcasedetail.requesttransfer
-                    runfuncation_params['requesttransfer'] = ast.literal_eval(requesttransfer)
-                if testcasedetail.responsetransfer and testcasedetail.responsetransfer!=' ':
-                    responsetransfer=testcasedetail.responsetransfer
-                    runfuncation_params['responsetransfer'] = responsetransfer
-                funcation_response=runfuncation(runfuncation_params)
-                if funcation_response.get('code')=='9999':
-                    # 将transferdata更新
-                    transferdata.update(funcation_response.get('transferdata'))
-                response[testcasedetail.testcaseDetailName] = funcation_response
-            if testcasedetail.type == "API":
-                runapi_params={}
-                apiCode = testcasedetail.testcaseDetailCode
-                runapi_params['apiCode']=apiCode
-                runapi_params['transferdata'] = transferdata
-                runapi_params['projectCode'] = projectcode
-                runapi_params['environmentName'] = environmentName
-                if testcasedetail.requesttransfer and testcasedetail.requesttransfer!=' ':
-                    requesttransfer=testcasedetail.requesttransfer
-                    runapi_params['requesttransfer'] = ast.literal_eval(requesttransfer)
-                if testcasedetail.responsetransfer and testcasedetail.responsetransfer!=' ':
+                return response
+            if testcasedetail.requesttransfer and testcasedetail.requesttransfer!=' ':
+                requesttransfer=testcasedetail.requesttransfer
+                runsql_params['requesttransfer'] = ast.literal_eval(requesttransfer)
+            if testcasedetail.responsetransfer and testcasedetail.responsetransfer!=' ':
+                responsetransfer=testcasedetail.responsetransfer
+                runsql_params['responsetransfer'] = responsetransfer
+            runsql_params['transferdata'] = transferdata
+            sql_response=runSqlTemplate(runsql_params)
+            if sql_response.get('code')=='9999':
+                # 将transferdata更新
+                transferdata.update(sql_response.get('transferdata'))
+            response[testcasedetail.testcaseDetailName] = sql_response
+        if testcasedetail.type == "FUNCATION":
+            runfuncation_params = {}
+            funcation=testcasedetail.testcaseDetailCode
+            runfuncation_params['funcation']=funcation
+            runfuncation_params['transferdata'] = transferdata
+            if testcasedetail.requesttransfer and testcasedetail.requesttransfer!=' ':
+                requesttransfer=testcasedetail.requesttransfer
+                runfuncation_params['requesttransfer'] = ast.literal_eval(requesttransfer)
+            if testcasedetail.responsetransfer and testcasedetail.responsetransfer!=' ':
+                responsetransfer=testcasedetail.responsetransfer
+                runfuncation_params['responsetransfer'] = responsetransfer
+            funcation_response=runfuncation(runfuncation_params)
+            if funcation_response.get('code')=='9999':
+                # 将transferdata更新
+                transferdata.update(funcation_response.get('transferdata'))
+            response[testcasedetail.testcaseDetailName] = funcation_response
+        if testcasedetail.type == "API":
+            runapi_params={}
+            apiCode = testcasedetail.testcaseDetailCode
+            runapi_params['apiCode']=apiCode
+            runapi_params['transferdata'] = transferdata
+            runapi_params['projectCode'] = projectcode
+            runapi_params['environmentName'] = environmentName
+            if testcasedetail.requesttransfer and testcasedetail.requesttransfer!=' ':
+                requesttransfer=testcasedetail.requesttransfer
+                runapi_params['requesttransfer'] = ast.literal_eval(requesttransfer)
+            if testcasedetail.responsetransfer and testcasedetail.responsetransfer!=' ':
 
-                    responsetransfer=testcasedetail.responsetransfer
-                    runapi_params['responsetransfer'] = ast.literal_eval(responsetransfer)
+                responsetransfer=testcasedetail.responsetransfer
+                runapi_params['responsetransfer'] = ast.literal_eval(responsetransfer)
 
-                api_response=runApiTemplate(runapi_params)
+            api_response=runApiTemplate(runapi_params)
 
-                if api_response.get('code')=='9999':
-                    # 将transferdata更新
-                    transferdata.update(api_response.get('transferdata'))
-                response[testcasedetail.testcaseDetailName]=api_response
-
+            if api_response.get('code')=='9999':
+                # 将transferdata更新
+                transferdata.update(api_response.get('transferdata'))
+            response[testcasedetail.testcaseDetailName]=api_response
         response['msg'] = '用例执行完成'
         response['code'] = "9999"
-        return JsonResponse(response)
-    except Exception as e:
-        response['msg'] = str(e)
-        response['code'] = "9901"
-        return JsonResponse(response)
+        return response
 
 
 # 查询用例列表

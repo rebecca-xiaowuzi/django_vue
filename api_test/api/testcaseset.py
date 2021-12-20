@@ -3,10 +3,10 @@ import json
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
 from django.views import View
-from api_test.serializers import TestCaseSetSerializer
+from api_test.serializers import TestCaseSetSerializer,ResultSerializer
 from rest_framework.parsers import JSONParser
 from api_test.api.login import GetUserFromHeader
-from api_test.models import TestCaseSet
+from api_test.models import TestCaseSet,Result
 from api_test.api.testcase import runtestcase
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 """测试用例集合模块"""
@@ -17,7 +17,6 @@ class  AddTestCaseSet(View):
               response = {}
               request_data = JSONParser().parse(request)
               request_data['create_user'] = create_user
-              print(request_data)
               try:
                 testcaseset_serializer = TestCaseSetSerializer(data=request_data)
                 if testcaseset_serializer.is_valid():
@@ -42,9 +41,9 @@ class  RunTestCaseSet(View):
             create_user = GetUserFromHeader(request).getuser()
             response = {}
             request_exceltestcase={}
+            result_data={}
             request_data = JSONParser().parse(request)
             # request_exceltestcase['create_user'] = create_user
-            print(request_data)
             testcasesetCode=request_data['testcasesetCode']
             request_exceltestcase['projectCode']=request_data['projectCode']
             request_exceltestcase['environmentName'] = request_data['environmentName']
@@ -55,7 +54,20 @@ class  RunTestCaseSet(View):
                     for testcasecode in testcasecodes:
                         request_exceltestcase['testcaseCode']=testcasecode
                         res=runtestcase(request_exceltestcase)
-                        response[testcasecode]=str(res.content)
+                        response[testcasecode]=res
+                    # 将用例执行的结果写入到reslut表中
+                    result_data['create_user'] = create_user
+                    result_data['projectCode'] = request_data.get('projectCode')
+                    result_data['testcasesetCode'] = testcasesetCode
+                    result_data['request'] = str(request_data)
+                    result_data['result_detail'] = str(response)
+                    Result_serializer = ResultSerializer(data=result_data)
+                    if Result_serializer.is_valid():
+                        Result_serializer.save()
+                    else:
+                        response['code'] = "9902"
+                        response['msg'] = Result_serializer.errors
+                        return JsonResponse(response)
                     response['msg'] = "用例集执行完成"
                     response['code'] = "9999"
                     return JsonResponse(response)

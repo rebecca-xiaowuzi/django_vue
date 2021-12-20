@@ -88,6 +88,9 @@ export default {
       environmentlist:[]
     }
   },
+created(){
+      this.searchTestcase()
+    },
   methods: {
      getenvironmentList (row) {
       var projectcode = row.projectCode
@@ -119,9 +122,6 @@ export default {
         } else {
           // 获取项目下拉列表数据
           this.projectlist = response.data.data
-          // 项目下拉框设置默认值
-          this.searchtestcase.projectCode = response.data.data[0].projectCode
-          this.searchTestcase()
         }
       })
     },
