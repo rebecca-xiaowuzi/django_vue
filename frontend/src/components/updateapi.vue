@@ -34,7 +34,7 @@
        <el-form-item label="接口地址">
     <el-input  v-model="updateapi.apiAddress"></el-input>
   </el-form-item>
-       <el-form-item label="接口描述">
+       <el-form-item label="接口所属服务">
     <el-input  v-model="updateapi.description"></el-input>
   </el-form-item>
        <el-form-item label="接口状态">

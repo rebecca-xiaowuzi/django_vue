@@ -40,7 +40,7 @@
        <el-form-item label="接口地址">
     <el-input  v-model="addapi.apiAddress"></el-input>
   </el-form-item>
-       <el-form-item label="接口描述">
+       <el-form-item label="接口所属服务">
     <el-input  v-model="addapi.description"></el-input>
   </el-form-item>
        <el-form-item label="接口状态">

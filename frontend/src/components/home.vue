@@ -18,7 +18,7 @@
                     <!--default-active代表导航栏默认选中哪个index, :collapse决定导航栏是否展开，为boolean类型
                     :router决定导航栏是否开启路由模式，即在菜单item上设置路由是否生效，值为boolean类型-->
                     <el-menu
-                            default-active="0"
+                            default-active="1"
                             class="el-menu-vertical-demo"
                             :collapse="isCollapse"
                             :router="true"

@@ -1,6 +1,7 @@
 import ast
 import json
-
+import time
+import copy
 import requests
 from django.core.handlers.wsgi import WSGIRequest
 from django.db import transaction
@@ -242,6 +243,7 @@ def runtestcase(request_data):
                 transferdata.update(funcation_response.get('transferdata'))
             response[testcasedetail.testcaseDetailName] = funcation_response
         if testcasedetail.type == "API":
+
             runapi_params={}
             apiCode = testcasedetail.testcaseDetailCode
             runapi_params['apiCode']=apiCode
@@ -262,9 +264,9 @@ def runtestcase(request_data):
                 # 将transferdata更新
                 transferdata.update(api_response.get('transferdata'))
             response[testcasedetail.testcaseDetailName]=api_response
-        response['msg'] = '用例执行完成'
-        response['code'] = "9999"
-        return response
+    response['msg'] = '用例执行完成'
+    response['code'] = "9999"
+    return response
 
 
 # 查询用例列表
@@ -360,6 +362,52 @@ class GetTestcaseDetail(View):
             response['msg'] = "用例不存在"
             response['code'] = '9900'
             return JsonResponse(response)
+
+# 复制用例
+class CopyTestcase(View):
+    def param_check(self, request_data):
+        response = {}
+        try:
+            if not request_data["testcaseCode"] or not request_data["projectCode"]:
+                response['msg'] = '参数有误'
+                response['code'] = '9966'
+                return JsonResponse(response)
+
+        except KeyError:
+            response['msg'] = '参数有误'
+            response['code'] = '9966'
+            return JsonResponse(response)
+
+    def post(self, request):
+        request_data = JSONParser().parse(request)
+        result = self.param_check(request_data=request_data)
+        if result:
+            return result
+        response = {}
+        testcaseCode = request_data.get('testcaseCode')
+        projectCode = request_data.get('projectCode')
+        # 判断用例是否存在,查询不到就是不存在
+        try:
+             testcaseinfo=TestCase.objects.get(Q(testcaseCode=testcaseCode),Q(projectCode=projectCode))
+             testcaseinfo_new=copy.deepcopy(testcaseinfo)
+             testcaseinfo_new.id=None
+             testcaseinfo_new.testcaseCode=testcaseinfo.testcaseCode+str(int(time.time()))
+             testcaseinfo_new.save()
+             testcasedetails = TestCaseDetail.objects.filter(testcaseCode=testcaseCode).order_by('testcaseDetailOrder')
+             # 判断detail是否存在，长度为0就是不存在
+             if testcasedetails.count()!=0:
+                 for testcasedetail in testcasedetails:
+                     testcasedetailinfo_new = copy.deepcopy(testcasedetail)
+                     testcasedetailinfo_new.id = None
+                     testcasedetailinfo_new.testcaseCode =testcaseinfo_new.testcaseCode
+                     testcasedetailinfo_new.save()
+             response['msg'] = 'success'
+             response['code'] = '9999'
+             return JsonResponse(response)
+        except Exception as e:
+             response['msg'] = str(e)
+             response['code'] = '9900'
+             return JsonResponse(response)
 
 
 

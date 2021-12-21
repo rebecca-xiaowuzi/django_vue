@@ -57,6 +57,7 @@
     <el-dropdown-item v-for="enitem in environmentlist" :command="beforeHandleCommand(scope.row,enitem.environmentName)" v-text="enitem.environmentName"></el-dropdown-item>
   </el-dropdown-menu>
 </el-dropdown>
+         <el-button type="text" size="small"  @click="copyTestcase(scope.row)">复制</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -92,6 +93,16 @@ created(){
       this.searchTestcase()
     },
   methods: {
+    copyTestcase(row){
+       this.$http.post('TestCase/CopyTestcase',{projectCode:row.projectCode, testcaseCode:row.testcaseCode}).then(response => {
+        if (response.data.code !== '9999') {
+          return this.$message.error({message: response.data.msg, center: true})
+        } else {
+          // 获取项目环境下拉列表数据
+         this.searchTestcase()
+        }
+      })
+    },
      getenvironmentList (row) {
       var projectcode = row.projectCode
       this.$http.get(`Environment/getEnvironmentbyprojectcode?projectCode=${projectcode}`).then(response => {

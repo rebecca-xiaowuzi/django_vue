@@ -140,8 +140,8 @@ export default {
     }
   },
   created(){
-    this.getenvironmentList(),
-      this.apiList()
+    this.apiList()
+    this.getenvironmentList()
   },
   methods: {
     drawerclick () {

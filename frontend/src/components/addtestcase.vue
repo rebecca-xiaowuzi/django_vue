@@ -108,71 +108,78 @@ export default {
     },
     addtestcase () {
       var TestCaseDetail = []
+     var child_api_number=0
+        var child_sql_number=0
+        var child_funcation_number=0
       for (var i = 0, len = this.list2.length; i < len; i++) {
+
         if (this.list2[i].type === 'childapi') {
           var testcasedetail_api = {}
           testcasedetail_api['type'] = 'API'
           testcasedetail_api['testcaseDetailOrder'] = i
-          testcasedetail_api['testcaseDetailCode'] = this.$refs.childapi[0].api.apiCode
-          testcasedetail_api['testcaseDetailName'] = this.$refs.childapi[0].api.apiname
+          testcasedetail_api['testcaseDetailCode'] = this.$refs.childapi[child_api_number].api.apiCode
+          testcasedetail_api['testcaseDetailName'] = this.$refs.childapi[child_api_number].api.apiname
           // 处理requesttransfer数据格式--从数组转为字典
           var requesttransfer_api = {}
-          if ((this.$refs.childapi[0].api.requesttransfer.length === 1) & (this.$refs.childapi[0].api.requesttransfer[0].name === '') & (this.$refs.childapi[0].api.requesttransfer[0].value === '')) {
+          if ((this.$refs.childapi[child_api_number].api.requesttransfer.length === 1) & (this.$refs.childapi[child_api_number].api.requesttransfer[0].name === '') & (this.$refs.childapi[child_api_number].api.requesttransfer[0].value === '')) {
           } else {
-            for (var j = 0; j < this.$refs.childapi[0].api.requesttransfer.length; j++) {
-              requesttransfer_api[this.$refs.childapi[0].api.requesttransfer[j]['name']] = this.$refs.childapi[0].api.requesttransfer[j]['value']
+            for (var j = 0; j < this.$refs.childapi[child_api_number].api.requesttransfer.length; j++) {
+              requesttransfer_api[this.$refs.childapi[child_api_number].api.requesttransfer[j]['name']] = this.$refs.childapi[child_api_number].api.requesttransfer[j]['value']
             }
             testcasedetail_api['requesttransfer'] = JSON.stringify(requesttransfer_api)
           }
 
           // responsetransfer--从数组转为字典
           var responsetransfer_api = {}
-          if ((this.$refs.childapi[0].api.responsetransfer.length === 1) & (this.$refs.childapi[0].api.responsetransfer[0].name === '') & (this.$refs.childapi[0].api.responsetransfer[0].value === '')) {
+          if ((this.$refs.childapi[child_api_number].api.responsetransfer.length === 1) & (this.$refs.childapi[child_api_number].api.responsetransfer[0].name === '') & (this.$refs.childapi[child_api_number].api.responsetransfer[0].value === '')) {
           } else {
-            for (var k = 0; k < this.$refs.childapi[0].api.responsetransfer.length; k++) {
-              responsetransfer_api[this.$refs.childapi[0].api.responsetransfer[k]['name']] = this.$refs.childapi[0].api.responsetransfer[k]['value']
+            for (var k = 0; k < this.$refs.childapi[child_api_number].api.responsetransfer.length; k++) {
+              responsetransfer_api[this.$refs.childapi[child_api_number].api.responsetransfer[k]['name']] = this.$refs.childapi[child_api_number].api.responsetransfer[k]['value']
             }
             testcasedetail_api['responsetransfer'] = JSON.stringify(responsetransfer_api)
           }
 
           TestCaseDetail.push(testcasedetail_api)
+          child_api_number=child_api_number+1
         } else if (this.list2[i].type === 'childsql') {
           var testcasedetail_sql = {}
           testcasedetail_sql['type'] = 'SQL'
           testcasedetail_sql['testcaseDetailOrder'] = i
-          testcasedetail_sql['testcaseDetailCode'] = this.$refs.childsql[0].sql.sqlCode
-          testcasedetail_sql['testcaseDetailName'] = this.$refs.childsql[0].sql.sqlname
-          testcasedetail_sql['responsetransfer'] = this.$refs.childsql[0].sql.responsetransfer
+          testcasedetail_sql['testcaseDetailCode'] = this.$refs.childsql[child_sql_number].sql.sqlCode
+          testcasedetail_sql['testcaseDetailName'] = this.$refs.childsql[child_sql_number].sql.sqlname
+          testcasedetail_sql['responsetransfer'] = this.$refs.childsql[child_sql_number].sql.responsetransfer
           // 处理requesttransfer数据格式--从数组转为字典
           var requesttransfer_sql = {}
-          if ((this.$refs.childsql[0].sql.requesttransfer.length === 1) & (this.$refs.childsql[0].sql.requesttransfer[0].name === '') & (this.$refs.childsql[0].sql.requesttransfer[0].value === '')) {
+          if ((this.$refs.childsql[child_sql_number].sql.requesttransfer.length === 1) & (this.$refs.childsql[child_sql_number].sql.requesttransfer[0].name === '') & (this.$refs.childsql[child_sql_number].sql.requesttransfer[0].value === '')) {
           } else {
-            for (var a = 0; a < this.$refs.childsql[0].sql.requesttransfer.length; a++) {
-              requesttransfer_sql[this.$refs.childsql[0].sql.requesttransfer[a]['name']] = this.$refs.childsql[0].sql.requesttransfer[a]['value']
+            for (var a = 0; a < this.$refs.childsql[child_sql_number].sql.requesttransfer.length; a++) {
+              requesttransfer_sql[this.$refs.childsql[child_sql_number].sql.requesttransfer[a]['name']] = this.$refs.childsql[child_sql_number].sql.requesttransfer[a]['value']
             }
             testcasedetail_sql['requesttransfer'] = JSON.stringify(requesttransfer_sql)
           }
 
 
           TestCaseDetail.push(testcasedetail_sql)
+          child_sql_number=child_sql_number+1
         } else if (this.list2[i].type === 'childfuncation') {
           var testcasedetail_funcation = {}
           testcasedetail_funcation['type'] = 'FUNCATION'
           testcasedetail_funcation['testcaseDetailOrder'] = i
-          testcasedetail_funcation['testcaseDetailCode'] = this.$refs.childfuncation[0].funcation.funcation
-          testcasedetail_funcation['testcaseDetailName'] = this.$refs.childfuncation[0].funcation.funcationname
-          testcasedetail_funcation['responsetransfer'] = this.$refs.childfuncation[0].funcation.responsetransfer
+          testcasedetail_funcation['testcaseDetailCode'] = this.$refs.childfuncation[child_funcation_number].funcation.funcation
+          testcasedetail_funcation['testcaseDetailName'] = this.$refs.childfuncation[child_funcation_number].funcation.funcationname
+          testcasedetail_funcation['responsetransfer'] = this.$refs.childfuncation[child_funcation_number].funcation.responsetransfer
           // 处理requesttransfer数据格式--从数组转为字典
           var requesttransfer_funcation = {}
-          if ((this.$refs.childfuncation[0].funcation.requesttransfer.length === 1) & (this.$refs.childfuncation[0].funcation.requesttransfer[0].name === '') & (this.$refs.childfuncation[0].funcation.requesttransfer[0].value === '')) {
+          if ((this.$refs.childfuncation[child_funcation_number].funcation.requesttransfer.length === 1) & (this.$refs.childfuncation[child_funcation_number].funcation.requesttransfer[0].name === '') & (this.$refs.childfuncation[child_funcation_number].funcation.requesttransfer[0].value === '')) {
           } else {
-            for (var c = 0; c < this.$refs.childfuncation[0].funcation.requesttransfer.length; c++) {
-              requesttransfer_funcation[this.$refs.childfuncation[0].funcation.requesttransfer[c]['name']] = this.$refs.childfuncation[0].funcation.requesttransfer[c]['value']
+            for (var c = 0; c < this.$refs.childfuncation[child_funcation_number].funcation.requesttransfer.length; c++) {
+              requesttransfer_funcation[this.$refs.childfuncation[child_funcation_number].funcation.requesttransfer[c]['name']] = this.$refs.childfuncation[child_funcation_number].funcation.requesttransfer[c]['value']
             }
             testcasedetail_funcation['requesttransfer'] = JSON.stringify(requesttransfer_funcation)
           }
 
           TestCaseDetail.push(testcasedetail_funcation)
+          child_funcation_number=child_funcation_number+1
         }
       }
       var testcase = {

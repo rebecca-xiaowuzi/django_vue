@@ -47,4 +47,5 @@ url(r'TestCase/UpdateTestCase', testcase.UpdateTestCase.as_view()),
 url(r'TestCaseSet/testcasesetlist', testcaseset.testcasesetlist.as_view()),
 url(r'Result/ResultList', result.ResultList.as_view()),
 url(r'Result/GetResultDetail', result.GetResultDetail.as_view()),
+url(r'TestCase/CopyTestcase', testcase.CopyTestcase.as_view()),
 ]

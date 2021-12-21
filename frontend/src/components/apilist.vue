@@ -52,7 +52,7 @@
     </el-table-column>
     <el-table-column
       prop="description"
-      label="接口描述">
+      label="接口所属服务">
     </el-table-column>
     <el-table-column
       prop="status"
