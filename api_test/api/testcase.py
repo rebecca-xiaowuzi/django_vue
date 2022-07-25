@@ -391,7 +391,7 @@ class CopyTestcase(View):
              testcaseinfo=TestCase.objects.get(Q(testcaseCode=testcaseCode),Q(projectCode=projectCode))
              testcaseinfo_new=copy.deepcopy(testcaseinfo)
              testcaseinfo_new.id=None
-             testcaseinfo_new.testcaseCode=testcaseinfo.testcaseCode+str(int(time.time()))
+             testcaseinfo_new.testcaseCode=str(int(time.time()))
              testcaseinfo_new.save()
              testcasedetails = TestCaseDetail.objects.filter(testcaseCode=testcaseCode).order_by('testcaseDetailOrder')
              # 判断detail是否存在，长度为0就是不存在
