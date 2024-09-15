@@ -47,6 +47,7 @@
         <el-button  type="text" size="small" @click="projectdetail(scope.row)">查看</el-button>
         <el-button type="text" size="small"  @click="updateproject(scope.row)">编辑</el-button>
         <el-button type="text" size="small"  @click="addenvironment(scope.row)">添加环境信息</el-button>
+        <el-button type="text" size="small"  @click="deleteproject(scope.row)">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -88,6 +89,17 @@ export default {
       let phoneList = row.users.map((json) => { return json.phone })
       // let environmentList = row.environments.map((json) => { return json.phone })
       this.$router.push({path: '/projectdetail', query: {projectCode: row.projectCode, projectName: row.projectName, projectDescription: row.projectDescription, users: phoneList, environments: row.environments}})
+    },
+    deleteproject(row){
+       this.$http.post('Project/deleteProject',{projectCode:row.projectCode}).then(response => {
+        if (response.data.code !== '9999') {
+          return this.$message.error({message: response.data.msg, center: true})
+        }
+        else {
+          // 获取项目环境下拉列表数据
+         this.handleCurrentChange(1)
+        }
+      })
     }
     // 暂未实现
     // deleteuser (row) {

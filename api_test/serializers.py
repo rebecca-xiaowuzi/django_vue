@@ -242,7 +242,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         users=User2Project.objects.filter(projectCode=obj.projectCode)
         return Project2UserSerializer(instance=users,many=True).data
     def get_environments(self,obj):
-        environments=Environment.objects.filter(projectCode=obj.projectCode)
+        environments=Environment.objects.filter(projectCode=obj.projectCode,status=1)
         return ProjectEnvironmentSerializer(instance=environments,many=True).data
 
 

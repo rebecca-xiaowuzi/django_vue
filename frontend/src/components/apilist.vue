@@ -67,6 +67,7 @@
       label="操作">
       <template slot-scope="scope">
         <el-button type="text" size="small"  @click="updateapi(scope.row)">编辑</el-button>
+        <el-button type="text" size="small"  @click="deleteapi(scope.row)">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -103,6 +104,16 @@ export default {
   methods: {
     updateapi (row) {
       this.$router.push({path: '/updateapi', query: { projectCode: row.projectCode, apiCode: row.apiCode }})
+    },
+    deleteapi(row){
+       this.$http.post('Api/deleteApi',{projectCode:row.projectCode, apiCode:row.apiCode}).then(response => {
+        if (response.data.code !== '9999') {
+          return this.$message.error({message: response.data.msg, center: true})
+        } else {
+          // 获取项目环境下拉列表数据
+         this.searchApi()
+        }
+      })
     },
     projectList () {
       this.$http.get('Project/getProjects').then(response => {

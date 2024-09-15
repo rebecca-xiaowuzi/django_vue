@@ -17,3 +17,4 @@ api_test/api/__pycache__
 *.ntvs*
 *.njsproj
 *.sln
+myenv

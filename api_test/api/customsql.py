@@ -9,6 +9,7 @@ from api_test.serializers import SqlConnectSerializer,SqlSerializer
 from api_test.api.login import GetUserFromHeader
 from api_test.models import SqlConnect,Sql
 import pymysql
+from django.utils import timezone
 """sql模块"""
 
 class  AddSqlConnect(View):
@@ -61,6 +62,7 @@ class getsqlconnectlist(View):
 
         # //动态变量
         kwargs={}
+        kwargs['status'] = 1
         kwargs['environmentName']=environmentName
         kwargs['projectCode'] = projectCode
         if 'sqlconnectName' not in request_data or request_data.get('sqlconnectName') == "":
@@ -68,7 +70,6 @@ class getsqlconnectlist(View):
         else:
             kwargs['sqlconnectName__icontains'] = request_data.get('sqlconnectName')
         sqlconnects=SqlConnect.objects.filter(**kwargs).order_by('-id')
-        print(sqlconnects)
         total = sqlconnects.count()
         # 不传page和pagesize，默认显示所有
         if 'page' not in request_data:
@@ -189,12 +190,73 @@ class AddSql(View):
                      response['code'] = "9900"
                      return JsonResponse(response)
 
+
+class UpdateSql(View):
+    "修改sql"
+
+    def post(self, request):
+        create_user = GetUserFromHeader(request).getuser()
+        response = {}
+        request_data = JSONParser().parse(request)
+        request_data['create_user'] = create_user
+        sqlCode = request_data.get('sqlCode')
+        try:
+            sqlinfo = Sql.objects.get(Q(sqlCode=sqlCode))
+            sqlinfo.sql = request_data.get('sql')
+            sqlinfo.save()
+
+            response['code'] = '9999'
+            response['msg'] = 'success'
+            return JsonResponse(response)
+        except Exception as e:
+            response['msg'] = str(e)
+            response['code'] = "9900"
+            return JsonResponse(response)
+
+# 查询sql详情
+class getsqlDetail(View):
+    def param_check(self, request_data):
+        response = {}
+        try:
+            if not request_data["sqlCode"]:
+                response['msg'] = '参数有误'
+                response['code'] = '9966'
+                return JsonResponse(response)
+
+        except KeyError:
+            response['msg'] = '参数有误'
+            response['code'] = '9966'
+            return JsonResponse(response)
+
+    def post(self, request):
+        request_data = JSONParser().parse(request)
+        result = self.param_check(request_data=request_data)
+        if result:
+            return result
+        response = {}
+        sqlCode = request_data.get('sqlCode')
+        # 判断数据是否存在,查询不到就是不存在
+        try:
+             sqlinfo=Sql.objects.get(Q(sqlCode=sqlCode))
+             sqlinfoSer = SqlSerializer(instance=sqlinfo, many=False).data
+             response['data'] = sqlinfoSer
+             response['msg'] = 'success'
+             response['code'] = '9999'
+             return JsonResponse(response)
+        except :
+            response['msg'] = "sql不存在"
+            response['code'] = '9999'
+            return JsonResponse(response)
+
+
+
 # 查询项目数据量连接信息列表
 class getsqllist(View):
     def post(self, request):
         request_data = JSONParser().parse(request)
         response = {}
         kwargs={}
+        kwargs['status'] = 1
         if 'sqlName' not in request_data or request_data.get('sqlName') == "":
             pass
         else:
@@ -260,6 +322,7 @@ def runSqlTemplate(request_data):
     if 'sqlCode' in request_data:
         sqlCode = request_data.get('sqlCode')
         sqlold = Sql.objects.get(sqlCode=sqlCode).sql
+
     else:
         response['code'] = "9900"
         response['msg'] = "请输入sql编号"
@@ -282,7 +345,7 @@ def runSqlTemplate(request_data):
     result = excutesql(request_executesql)
     "如果有值需要处理,都增加到transferdata字典中"
     if 'responsetransfer' in request_data:
-        transferdata.update({request_data.get('responsetransfer'): result})
+        transferdata.update({request_data.get('responsetransfer'): result[0][0]})
     response['result'] = result
     response['transferdata'] = transferdata
     response['code'] = '9999'
@@ -312,7 +375,104 @@ def excutesql(request_data):
 
 
 
+#删除sql
+class deleteSql(View):
+   """删除sql
+   1、sql是否存在
+   2、sqlID必填
+   """
 
+   def param_check(self, request_data):
+       response = {}
+       try:
+           if not request_data["sqlCode"]  :
+               response['msg'] = '参数有误ddd'
+               response['code'] = '9966'
+               return JsonResponse(response)
+
+       except KeyError:
+           response['msg'] = '参数有误xxxxx'
+           response['code'] = '9966'
+           return JsonResponse(response)
+
+   def post(self, request):
+       request_data = JSONParser().parse(request)
+       result = self.param_check(request_data=request_data)
+       if result:
+           return result
+       response = {}
+       sqlCode = request_data.get('sqlCode')
+       try:
+           obj=Sql.objects.filter(sqlCode=sqlCode)
+           if len(obj)==1:
+               if  obj[0].status==1:
+                   obj.update(status=0,update_time=timezone.now())
+                   response['msg'] = 'update success'
+                   response['code'] = '9999'
+                   return JsonResponse(response)
+               else:
+                   response['msg'] = '该sql已删除'
+                   response['code'] = '9902'
+                   return JsonResponse(response)
+           else:
+               response['code'] = '9901'
+               response['msg'] = 'sql不存在'
+               return JsonResponse(response)
+       except ObjectDoesNotExist:
+           response['code'] = '9901'
+           response['msg'] = 'sql不存在'
+           return JsonResponse(response)
+
+
+#删除数据库连接信息
+class deleteSqlConnect(View):
+   """删除数据库连接信息
+   1、连接信息是否存在
+   2、连接ID必填
+   """
+
+   def param_check(self, request_data):
+       response = {}
+       try:
+           if not request_data["sqlconnectCode"] or not request_data["projectCode"] or not request_data["environmentName"]:
+               response['msg'] = '参数有误ddd'
+               response['code'] = '9966'
+               return JsonResponse(response)
+
+       except KeyError:
+           response['msg'] = '参数有误xxxxx'
+           response['code'] = '9966'
+           return JsonResponse(response)
+
+   def post(self, request):
+       request_data = JSONParser().parse(request)
+       result = self.param_check(request_data=request_data)
+       if result:
+           return result
+       response = {}
+       projectCode = request_data.get('projectCode')
+       sqlconnectCode = request_data.get('sqlconnectCode')
+       environmentName = request_data.get('environmentName')
+       try:
+           obj=SqlConnect.objects.filter(sqlconnectCode=sqlconnectCode,projectCode=projectCode,environmentName=environmentName)
+           if len(obj)==1:
+               if  obj[0].status==1:
+                   obj.update(status=0,update_time=timezone.now())
+                   response['msg'] = 'update success'
+                   response['code'] = '9999'
+                   return JsonResponse(response)
+               else:
+                   response['msg'] = '该连接信息已删除'
+                   response['code'] = '9902'
+                   return JsonResponse(response)
+           else:
+               response['code'] = '9901'
+               response['msg'] = '连接信息不存在'
+               return JsonResponse(response)
+       except ObjectDoesNotExist:
+           response['code'] = '9901'
+           response['msg'] = '连接信息不存在'
+           return JsonResponse(response)
 
 
 

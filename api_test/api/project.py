@@ -9,7 +9,7 @@ from api_test.models import Project,User2Project
 from django.db import transaction
 
 from api_test.serializers import ProjectSerializer
-
+from django.utils import timezone
 """项目模块"""
 class addProject(View):
 
@@ -39,7 +39,6 @@ class addProject(View):
             return result
         response = {}
         projectCode = request_data.get('projectCode')
-        print(projectCode)
         projectName = request_data.get('projectName')
         projectDescription = request_data.get('projectDescription')
         users=request_data.get('users')
@@ -95,7 +94,7 @@ class getProjects(View):
         else:
             page = request.GET.get('page')
             pagesize = request.GET.get('pagesize')
-        projects = models.Project.objects.all().order_by('-id')
+        projects = models.Project.objects.filter(status=1).order_by('-id')
         contacts = Paginator(projects, int(pagesize))
         try:
             projectlist = contacts.page(int(page))
@@ -199,4 +198,52 @@ class updateProject(View):
        except:
            response['code'] = '9900'
            response['msg'] = "项目不存在"
+           return JsonResponse(response)
+
+#删除项目
+class deleteProject(View):
+   """删除项目
+   1、项目是否存在
+   2、项目ID必填
+   """
+
+   def param_check(self, request_data):
+       response = {}
+       try:
+           if not request_data["projectCode"]:
+               response['msg'] = '参数有误ddd'
+               response['code'] = '9966'
+               return JsonResponse(response)
+
+       except KeyError:
+           response['msg'] = '参数有误xxxxx'
+           response['code'] = '9966'
+           return JsonResponse(response)
+
+   def post(self, request):
+       request_data = JSONParser().parse(request)
+       result = self.param_check(request_data=request_data)
+       if result:
+           return result
+       response = {}
+       projectCode = request_data.get('projectCode')
+       try:
+           obj=Project.objects.filter(projectCode=projectCode)
+           if len(obj)==1:
+               if  obj[0].status==1:
+                   obj.update(status=0,update_time=timezone.now())
+                   response['msg'] = 'update success'
+                   response['code'] = '9999'
+                   return JsonResponse(response)
+               else:
+                   response['msg'] = '该项目已删除'
+                   response['code'] = '9902'
+                   return JsonResponse(response)
+           else:
+               response['code'] = '9901'
+               response['msg'] = '项目不存在'
+               return JsonResponse(response)
+       except ObjectDoesNotExist:
+           response['code'] = '9901'
+           response['msg'] = '项目不存在'
            return JsonResponse(response)

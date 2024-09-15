@@ -65,13 +65,15 @@ def runfuncation(request_data):
         for k, v in request_data.get('requesttransfer').items():
             transferdata.update({k: v})
     "直接找到函数,进行参数替换"
+
     tempTemplate = Template(Funcation)
     funcation = tempTemplate.substitute(transferdata)
     "执行函数"
-    result = eval(funcation)
+    result = eval("common_funcation."+funcation)
     "如果有值需要处理,都增加到transferdata字典中"
     if 'responsetransfer' in request_data:
-      transferdata.update({responsetransfer: result})
+        transferdata.update({request_data.get('responsetransfer'): result})
+
     response['result'] = result
     response['transferdata'] = transferdata
     response['code'] = "9999"

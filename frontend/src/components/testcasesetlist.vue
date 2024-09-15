@@ -1,4 +1,4 @@
-<template>
+e223<template>
   <div>
   <el-form :inline="true" :model="searchtestcaseset" class="demo-form-inline">
     <el-form-item label="项目编号">
@@ -55,9 +55,10 @@
  <el-dropdown trigger="click" @command="runtestcaseset">
    <el-button type="primary"  @click ="getenvironmentList(scope.row)">运行</el-button>
   <el-dropdown-menu slot="dropdown">
-    <el-dropdown-item v-for="item in environmentlist" :command="beforeHandleCommand(scope.row,item.environmentName)" v-text="item.environmentName"></el-dropdown-item>
+    <el-dropdown-item v-for="(item,index) in environmentlist" :key="index" :command="beforeHandleCommand(scope.row,item.environmentName)" v-text="item.environmentName"></el-dropdown-item>
   </el-dropdown-menu>
 </el-dropdown>
+         <el-button type="text" size="small"  @click="deleteTestcaseSet(scope.row)">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -95,6 +96,16 @@ export default {
       this.searchTestcaseSet()
     },
   methods: {
+    deleteTestcaseSet(row){
+       this.$http.post('TestCaseSet/DeleteTestCaseSet',{projectCode:row.projectCode, testcasesetCode:row.testcasesetCode}).then(response => {
+        if (response.data.code !== '9999') {
+          return this.$message.error({message: response.data.msg, center: true})
+        } else {
+          // 获取项目环境下拉列表数据
+         this.searchTestcaseSet()
+        }
+      })
+    },
     beforeHandleCommand(row,command){
       return {row,command}
     },

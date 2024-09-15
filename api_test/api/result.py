@@ -6,6 +6,7 @@ from api_test import models
 from api_test.models import Result
 from django.http import JsonResponse
 from api_test.serializers import ResultSerializer
+import json
 
 
 # 查询用例列表
@@ -95,3 +96,35 @@ class GetResultDetail(View):
             response['msg'] = "结果不存在"
             response['code'] = '9900'
             return JsonResponse(response)
+
+
+# 断言，判断用例执行结果
+#状态码要和接口文档一致
+#数据库数据要正确
+#  修改数据
+#  增加数据
+#  删除数据
+#接口返回的格式要和接口文档一致
+# request  需要有状态码，接口模型，数据库数据操作
+# 定义期望用例执行结果是什么 接口返回结果是什么 数据库怎么操作
+class TestCaseResult(View):
+    def post(self, request):
+        response = {}
+        # request_data = JSONParser().parse(request)
+        # request_data={'expe_result': '{msg: "success", code: "9999", phone: "dsdds"}',
+        #               'real_result': '{msg: "success", code: "9999", phone: "dsdds"}','status_code':200}
+        # #接口状态为200，继续，否则直接返回fail
+        # if request_data.get('status_code') == 200:
+        #       expe_result=request_data.get('expe_result')
+        #       real_result=request_data.get('real_result')
+        #       try:
+        #           if expe_result==real_result:
+        #               response['msg']='pass'
+        #               return  response
+        #       except json.JSONDecodeError:
+        #           print('aaaaaaaaaa')
+        #           response['msg'] = 'fail'
+        #           return reponse
+        # else:
+        #     return False
+

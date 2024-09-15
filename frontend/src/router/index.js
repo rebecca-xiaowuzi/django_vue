@@ -25,6 +25,7 @@ import childfuncation from '../components/childfuncation'
 import childapi from '../components/childapi'
 import sqllist from '../components/sqllist'
 import addsql from '../components/addsql'
+import updatesql from '../components/updatesql'
 import updatetestcase from '../components/updatetestcase'
 import testcasesetlist from '../components/testcasesetlist'
 import addtestcaseset from '../components/addtestcaseset'
@@ -148,6 +149,10 @@ export default new Router({
         {
           path: '/addsql',
           component: addsql
+        },
+        {
+          path: '/updatesql',
+          component: updatesql
         },
         {
           path: '/updatetestcase',

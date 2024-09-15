@@ -36,6 +36,7 @@
       label="操作">
       <template slot-scope="scope">
         <el-button type="text" size="small"  @click="updatesql(scope.row)">编辑</el-button>
+         <el-button type="text" size="small"  @click="deletesql(scope.row)">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -87,9 +88,19 @@ export default {
       this.$router.push('/addsql')
     },
     updatesql (row) {
-      this.$router.push({path: '/updateConnectsql', query: {projectCode: row.projectCode, environmentName: row.environmentName, sqlconnectCode: row.sqlconnectCode}})
+      this.$router.push({path: '/updatesql', query: {sqlCode: row.sqlCode}})
     }
-
+,
+    deletesql(row){
+       this.$http.post('Sql/DeleteSql',{sqlCode:row.sqlCode}).then(response => {
+        if (response.data.code !== '9999') {
+          return this.$message.error({message: response.data.msg, center: true})
+        } else {
+          // 获取项目环境下拉列表数据
+         this.searchSql()
+        }
+      })
+    }
   }
 }
 </script>

@@ -47,8 +47,7 @@ export default {
         projectCode:this.addtestcaseset.projectCode,
         testcasesetName: this.addtestcaseset.testcasesetName,
         testcasesetCode: this.addtestcaseset.testcasesetCode,
-        testcaselist: JSON.stringify(this.addtestcaseset.testcaselist)
-      }
+        testcaselist: JSON.stringify(this.addtestcaseset.testcaselist)      }
       this.$http.post('TestCaseSet/AddTestCaseSet', addtestcaseset_param).then(response => {
         if (response.data.code !== '9999') { return this.$message.error({message: response.data.msg, center: true}) } else { this.$router.push('/testcasesetlist') }
       })

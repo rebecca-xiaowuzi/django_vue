@@ -18,6 +18,7 @@ from api_test.api.api import runapi,runApiTemplate
 from string import Template
 import jmespath
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.utils import timezone
 """测试用例模块"""
 class  AddTestCase(View):
        "新增用例"
@@ -97,7 +98,6 @@ class  UpdateTestCase(View):
                 with transaction.atomic():
                      save_tage = transaction.savepoint()
                      if testcase_serializer.is_valid():
-                         print(request_data.get('testcaseCode'))
                          testcase_serializer.save()
 
                      else:
@@ -120,7 +120,6 @@ class  UpdateTestCase(View):
                          for testCaseDetails in request_data.get('TestCaseDetail'):
                              testCaseDetails['testcaseCode'] = request_data['testcaseCode']
                              testcasedetail_serializer = TestCaseDetailSerializer(data=testCaseDetails)
-                             print(testcasedetail_serializer)
                              if testcasedetail_serializer.is_valid():
                                  testcasedetail_serializer.save()
                              else:
@@ -175,6 +174,7 @@ class RunTestCase(View):
 
 
 def runtestcase(request_data):
+    #需要新增数据库连接参数sqlconnectCode
     transferdata = {}
     response = {}
     "前端传入执行在哪个环境执行哪条用例"
@@ -203,13 +203,18 @@ def runtestcase(request_data):
     for testcasedetail in testcasedetails:
         if testcasedetail.type == "SQL":
             runsql_params={}
+
             "获取到sqlcode和sqlconnectcode"
             if Sql.objects.filter(sqlCode=testcasedetail.testcaseDetailCode).exists():
+
                 sql = Sql.objects.filter(sqlCode=testcasedetail.testcaseDetailCode)
-                sqlCode = sql.sqlCode
-                sqlconnectCode = SqlConnect.objects.get(Q(projectcode=projectcode),Q(environmentName=environmentName)).sqlconnectCode
+
+                sqlCode = list(sql.values())[0].get('sqlCode')
+#这里需要优化，sqlconnectCode信息需要根据数据库连接信息sqlconnectcode一起获取
+                sqlconnectCode = SqlConnect.objects.get(Q(projectCode=projectcode),Q(environmentName=environmentName)).sqlconnectCode
                 runsql_params['sqlCode']=sqlCode
                 runsql_params['sqlconnectCode'] = sqlconnectCode
+
             else:
                 response['msg'] = 'sql不存在'
                 response['code'] = "9900"
@@ -221,6 +226,7 @@ def runtestcase(request_data):
                 responsetransfer=testcasedetail.responsetransfer
                 runsql_params['responsetransfer'] = responsetransfer
             runsql_params['transferdata'] = transferdata
+
             sql_response=runSqlTemplate(runsql_params)
             if sql_response.get('code')=='9999':
                 # 将transferdata更新
@@ -243,7 +249,6 @@ def runtestcase(request_data):
                 transferdata.update(funcation_response.get('transferdata'))
             response[testcasedetail.testcaseDetailName] = funcation_response
         if testcasedetail.type == "API":
-
             runapi_params={}
             apiCode = testcasedetail.testcaseDetailCode
             runapi_params['apiCode']=apiCode
@@ -257,9 +262,7 @@ def runtestcase(request_data):
 
                 responsetransfer=testcasedetail.responsetransfer
                 runapi_params['responsetransfer'] = ast.literal_eval(responsetransfer)
-
             api_response=runApiTemplate(runapi_params)
-
             if api_response.get('code')=='9999':
                 # 将transferdata更新
                 transferdata.update(api_response.get('transferdata'))
@@ -276,6 +279,7 @@ class testcaselist(View):
         request_data = JSONParser().parse(request)
 
         kwargs = {}
+        kwargs['status']=1
         if 'projectCode' not in request_data or request_data.get('projectCode') == "":
             pass
         else:
@@ -411,8 +415,54 @@ class CopyTestcase(View):
 
 
 
+#删除用例
+class deleteTestcase(View):
+   """删除用例
+   1、用例是否存在
+   2、用例ID必填
+   """
 
+   def param_check(self, request_data):
+       response = {}
+       try:
+           if not request_data["testcaseCode"] or not request_data["projectCode"] :
+               response['msg'] = '参数有误ddd'
+               response['code'] = '9966'
+               return JsonResponse(response)
 
+       except KeyError:
+           response['msg'] = '参数有误xxxxx'
+           response['code'] = '9966'
+           return JsonResponse(response)
+
+   def post(self, request):
+       request_data = JSONParser().parse(request)
+       result = self.param_check(request_data=request_data)
+       if result:
+           return result
+       response = {}
+       projectCode = request_data.get('projectCode')
+       testcaseCode = request_data.get('testcaseCode')
+       try:
+           obj=TestCase.objects.filter(testcaseCode=testcaseCode,projectCode=projectCode)
+           if len(obj)==1:
+               if  obj[0].status==1:
+                   obj.update(status=0,update_time=timezone.now())
+                   response['msg'] = 'update success'
+                   response['code'] = '9999'
+                   return JsonResponse(response)
+               else:
+                   response['msg'] = '该testcase已删除'
+                   response['code'] = '9902'
+                   return JsonResponse(response)
+           else:
+               response['code'] = '9901'
+               response['msg'] = 'testcase不存在'
+               return JsonResponse(response)
+       except ObjectDoesNotExist:
+           response['code'] = '9901'
+           response['msg'] = 'testcase不存在'
+           return JsonResponse(response)
 
 
 

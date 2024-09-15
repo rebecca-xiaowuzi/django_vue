@@ -111,6 +111,7 @@ export default {
      var child_api_number=0
         var child_sql_number=0
         var child_funcation_number=0
+      console.log(this.list2.length)
       for (var i = 0, len = this.list2.length; i < len; i++) {
 
         if (this.list2[i].type === 'childapi') {

@@ -40,6 +40,7 @@
       <el-form-item>
     <el-button type="primary" @click="updateEnvironment" >修改</el-button>
     <el-button @click="cancel">取消</el-button>
+        <el-button @click="deleteEnvironment">删除</el-button>
   </el-form-item>
       </el-form>
     </div>
@@ -67,7 +68,7 @@ export default {
         ip: ''
       },
       editableTabs: this.$route.query.environments,
-      activeName: ''
+      activeName:''
     }
   },
   methods: {
@@ -77,6 +78,16 @@ export default {
           return this.$message.error({message: response.data.msg, center: true})
         } else {
           this.$message.success({message: '修改环境信息成功', center: true})
+          this.$router.push('/projectlist')
+        }
+      })
+    },
+     deleteEnvironment () {
+      this.$http.post('Environment/deleteEnvironment', { environmentName: this.updateenvironment.environmentName, projectCode: this.projectdetail.projectCode}).then(response => {
+        if (response.data.code !== '9999') {
+          return this.$message.error({message: response.data.msg, center: true})
+        } else {
+          this.$message.success({message: '删除环境信息成功', center: true})
           this.$router.push('/projectlist')
         }
       })

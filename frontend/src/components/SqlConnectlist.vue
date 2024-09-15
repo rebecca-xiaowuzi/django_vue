@@ -61,6 +61,7 @@
       label="操作">
       <template slot-scope="scope">
         <el-button type="text" size="small"  @click="updateConnectsql(scope.row)">编辑</el-button>
+        <el-button type="text" size="small"  @click="deleteConnectsql(scope.row)">删除</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -132,6 +133,16 @@ export default {
     },
     updateConnectsql (row) {
       this.$router.push({path: '/updateConnectsql', query: {projectCode: row.projectCode, environmentName: row.environmentName, sqlconnectCode: row.sqlconnectCode}})
+    },
+    deleteConnectsql(row){
+       this.$http.post('Sql/DeleteSqlconnect',{sqlconnectCode:row.sqlconnectCode,projectCode:row.projectCode,environmentName:row.environmentName}).then(response => {
+        if (response.data.code !== '9999') {
+          return this.$message.error({message: response.data.msg, center: true})
+        } else {
+          // 获取项目环境下拉列表数据
+         this.searchConnectsql()
+        }
+      })
     }
 
   }

@@ -35,6 +35,7 @@ class Project(models.Model):
     projectCode=models.CharField(max_length=30,unique=True)
     create_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
+    status = models.BooleanField(default=True, verbose_name='状态')
 
 
 
@@ -58,6 +59,7 @@ class Environment(models.Model):
     update_time = models.DateTimeField(auto_now=True)
     projectCode = models.CharField(max_length=30,verbose_name='项目code')
     environmentDescription = models.TextField()
+    status = models.BooleanField(default=True, verbose_name='状态')
 
 
 class Variable(models.Model):
@@ -71,6 +73,7 @@ class Variable(models.Model):
     create_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
     create_user = models.CharField(max_length=30,null=True)
+    status = models.BooleanField(default=True, verbose_name='状态')
 
 HTTP_CHOICE = (
 ('HTTPS', 'HTTPS'),
@@ -155,6 +158,7 @@ class SqlConnect(models.Model):
     create_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
     create_user = models.CharField(max_length=200, null=True)
+    status = models.BooleanField(default=True, verbose_name='状态')
 
 
 class Sql(models.Model):
@@ -165,6 +169,7 @@ class Sql(models.Model):
     create_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
     create_user = models.CharField(max_length=200, null=True)
+    status = models.BooleanField(default=True, verbose_name='状态')
 
 
 class TestCase(models.Model):
@@ -176,6 +181,7 @@ class TestCase(models.Model):
     create_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
     create_user = models.CharField(max_length=200, null=True)
+    status = models.BooleanField(default=True)
 
 TESTCASE_CHOICE = (
     ('API', 'API'),
@@ -209,6 +215,7 @@ class TestCaseSet(models.Model):
     create_time = models.DateTimeField(auto_now_add=True)
     update_time = models.DateTimeField(auto_now=True)
     create_user = models.CharField(max_length=200, null=True)
+    status = models.BooleanField(default=True)
 
 
 class Result(models.Model):

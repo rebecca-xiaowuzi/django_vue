@@ -16,6 +16,7 @@ import requests
 from api_test.models import Environment,ApiInfo,ApiHead,ApiRequestParam
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 import  api_test.models
+from django.utils import timezone
 class AddApi(View):
      """新增api接口"""
      def post(self,request):
@@ -108,7 +109,6 @@ class RunApi(View):
 3、返回组装后的transferdata
 """
 def runApiTemplate(request_data):
-
     response={}
     if 'transferdata' in request_data:
      transferdata =request_data.get('transferdata')
@@ -194,9 +194,10 @@ def runapi(request_data):
     url = (Environment.objects.filter(projectCode=projectCode).filter(environmentName=environmentName))
     if url.exists():
         if method == 'POST':
-
             data = request_data['ApiRequestParam']
+
             r = requests.request("POST", url[0].ip + apiAddress, json=data, headers=head)
+
             return r
         if method == 'GET':
             if 'ApiRequestParam'  in request_data:
@@ -222,6 +223,7 @@ class apilist(View):
         else:
             pagesize = request_data.get('pagesize')
         kwargs = {}
+        kwargs['status'] = 1
         if 'projectCode' not in request_data or request_data.get('projectCode') == "":
             pass
         else:
@@ -256,6 +258,7 @@ class getapilistByprojectcode(View):
     def get(self, request):
         response = {}
         kwargs = {}
+        kwargs['status'] = 1
         if not request.GET.get('projectCode'):
             pass
         else:
@@ -445,6 +448,54 @@ class UpdateApi(View):
             return JsonResponse(response)
 
 
+#删除接口
+class deleteApi(View):
+   """删除接口
+   1、接口是否存在
+   2、接口code必填
+   """
+
+   def param_check(self, request_data):
+       response = {}
+       try:
+           if not request_data["apiCode"] or not request_data["projectCode"] :
+               response['msg'] = '参数有误ddd'
+               response['code'] = '9966'
+               return JsonResponse(response)
+
+       except KeyError:
+           response['msg'] = '参数有误xxxxx'
+           response['code'] = '9966'
+           return JsonResponse(response)
+
+   def post(self, request):
+       request_data = JSONParser().parse(request)
+       result = self.param_check(request_data=request_data)
+       if result:
+           return result
+       response = {}
+       projectCode = request_data.get('projectCode')
+       apiCode = request_data.get('apiCode')
+       try:
+           obj=ApiInfo.objects.filter(apiCode=apiCode,projectCode=projectCode)
+           if len(obj)==1:
+               if  obj[0].status==1:
+                   obj.update(status=0,update_time=timezone.now())
+                   response['msg'] = 'update success'
+                   response['code'] = '9999'
+                   return JsonResponse(response)
+               else:
+                   response['msg'] = '该api已删除'
+                   response['code'] = '9902'
+                   return JsonResponse(response)
+           else:
+               response['code'] = '9901'
+               response['msg'] = 'api不存在'
+               return JsonResponse(response)
+       except ObjectDoesNotExist:
+           response['code'] = '9901'
+           response['msg'] = 'api不存在'
+           return JsonResponse(response)
 
 
 

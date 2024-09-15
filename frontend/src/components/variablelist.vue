@@ -61,6 +61,8 @@
       label="操作">
       <template slot-scope="scope">
         <el-button type="text" size="small"  @click="updateproject(scope.row)">编辑</el-button>
+        <el-button type="text" size="small"  @click="deleteVariable(scope.row)">删除</el-button>
+
       </template>
     </el-table-column>
   </el-table>
@@ -129,6 +131,16 @@ export default {
     },
     addVariable () {
       this.$router.push('/addvariable')
+    },
+    deleteVariable(row){
+       this.$http.post('Environment/deleteVariable',{variableName:row.variableName,projectCode:row.projectCode,environmentName:row.environmentName}).then(response => {
+        if (response.data.code !== '9999') {
+          return this.$message.error({message: response.data.msg, center: true})
+        } else {
+          // 获取项目环境下拉列表数据
+         this.searchVariable()
+        }
+      })
     }
 
   }

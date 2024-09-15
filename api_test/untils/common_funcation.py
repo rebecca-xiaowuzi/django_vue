@@ -1,1 +1,1 @@
-from faker import Fakerfake=Faker()def hex_no0x():     return fake.sha256()
+from faker import Fakerimport randomfake=Faker()def hex_no0x():     return fake.sha256()#随机生成电话号码方法def ramdom_phone(prefix="02"):    # 生成8位数字    number = random.randint(10000000, 99999999)    # 格式化电话号码为 "prefix xxxxxxxx" 的形式    phone_number = f"{prefix} {number:08d}"    return phone_number

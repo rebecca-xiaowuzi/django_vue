@@ -8,6 +8,8 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from api_test.serializers import VariableDynamicSerializer,ProjectEnvironmentSerializer
 from api_test.api.login import GetUserFromHeader
 from django.db.models import Q
+from django.utils import timezone
+from api_test.models import Variable,Environment
 class addEnvironment(View):
     """新增项目环境
     1、环境名不可以重复
@@ -66,7 +68,6 @@ class AddVariable(View):
             #获取请求头中的user
             create_user = GetUserFromHeader(request).getuser()
             response={}
-            print(request)
             request_data = JSONParser().parse(request)
             request_data['create_user']=create_user
             try:
@@ -181,9 +182,9 @@ class getVariablelist(View):
             return JsonResponse(response)
     def post(self, request):
         request_data = JSONParser().parse(request)
-        result = self.param_check(request_data=request_data)
-        if result:
-            return result
+        # result = self.param_check(request_data=request_data)
+        # if result:
+        #     return result
         response = {}
         environmentName = request_data.get('environmentName')
         projectCode = request_data.get('projectCode')
@@ -200,10 +201,13 @@ class getVariablelist(View):
         kwargs={}
         kwargs['environmentName']=environmentName
         kwargs['projectCode'] = projectCode
+        kwargs['status'] = 1
+
         if 'variableName' not in request_data or request_data.get('variableName') == "":
             pass
         else:
             kwargs['variableName__icontains'] = request_data.get('variableName')
+
         variables=models.Variable.objects.filter(**kwargs).order_by('-id')
         total = variables.count()
         contacts = Paginator(variables, pagesize)
@@ -230,7 +234,7 @@ class getEnvironmentbyprojectcode(View):
     def get(self, request):
         response = {}
         projectCode = request.GET.get('projectCode')
-        environments = models.Environment.objects.filter(projectCode=projectCode).order_by('-id')
+        environments = models.Environment.objects.filter(Q(projectCode=projectCode),Q(status=1)).order_by('-id')
         # 序列化项目信息
         data = ProjectEnvironmentSerializer(instance=environments, many=True)
         response['data'] = data.data
@@ -239,5 +243,102 @@ class getEnvironmentbyprojectcode(View):
         return JsonResponse(response)
 
 
+#删除变凉信息
+class deleteVariable(View):
+   """删除变量信息
+   1、变量是否存在
+   2、变量ID必填
+   """
+
+   def param_check(self, request_data):
+       response = {}
+       try:
+           if not request_data["variableName"] or not request_data["projectCode"] or not request_data["environmentName"]:
+               response['msg'] = '参数有误ddd'
+               response['code'] = '9966'
+               return JsonResponse(response)
+
+       except KeyError:
+           response['msg'] = '参数有误xxxxx'
+           response['code'] = '9966'
+           return JsonResponse(response)
+
+   def post(self, request):
+       request_data = JSONParser().parse(request)
+       result = self.param_check(request_data=request_data)
+       if result:
+           return result
+       response = {}
+       projectCode = request_data.get('projectCode')
+       variableName = request_data.get('variableName')
+       environmentName = request_data.get('environmentName')
+       try:
+           obj=Variable.objects.filter(variableName=variableName,projectCode=projectCode,environmentName=environmentName)
+           if len(obj)==1:
+               if  obj[0].status==1:
+                   obj.update(status=0,update_time=timezone.now())
+                   response['msg'] = 'update success'
+                   response['code'] = '9999'
+                   return JsonResponse(response)
+               else:
+                   response['msg'] = '变量信息已删除'
+                   response['code'] = '9902'
+                   return JsonResponse(response)
+           else:
+               response['code'] = '9901'
+               response['msg'] = '变量信息不存在'
+               return JsonResponse(response)
+       except ObjectDoesNotExist:
+           response['code'] = '9901'
+           response['msg'] = '变量信息不存在'
+           return JsonResponse(response)
 
 
+#删除环境信息
+class deleteEnvironment(View):
+   """环境信息
+   1、环境是否存在
+   2、环境ID必填
+   """
+
+   def param_check(self, request_data):
+       response = {}
+       try:
+           if not  request_data["projectCode"] or not request_data["environmentName"]:
+               response['msg'] = '参数有误ddd'
+               response['code'] = '9966'
+               return JsonResponse(response)
+
+       except KeyError:
+           response['msg'] = '参数有误xxxxx'
+           response['code'] = '9966'
+           return JsonResponse(response)
+
+   def post(self, request):
+       request_data = JSONParser().parse(request)
+       result = self.param_check(request_data=request_data)
+       if result:
+           return result
+       response = {}
+       projectCode = request_data.get('projectCode')
+       environmentName = request_data.get('environmentName')
+       try:
+           obj=Environment.objects.filter(projectCode=projectCode,environmentName=environmentName)
+           if len(obj)==1:
+               if  obj[0].status==1:
+                   obj.update(status=0,update_time=timezone.now())
+                   response['msg'] = 'update success'
+                   response['code'] = '9999'
+                   return JsonResponse(response)
+               else:
+                   response['msg'] = '环境已删除'
+                   response['code'] = '9902'
+                   return JsonResponse(response)
+           else:
+               response['code'] = '9901'
+               response['msg'] = '环境不存在'
+               return JsonResponse(response)
+       except ObjectDoesNotExist:
+           response['code'] = '9901'
+           response['msg'] = '环境不存在'
+           return JsonResponse(response)
